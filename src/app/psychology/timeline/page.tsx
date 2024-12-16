@@ -7,45 +7,31 @@ interface TimelineEvent {
   date: string;
   title: string;
   description: string;
-  category: "study" | "practice" | "certification" | "research";
+  category: "study" | "practice" | "competition" | "research";
   image?: string;
 }
 
 const timelineEvents: TimelineEvent[] = [
   {
-    date: "2020-09",
-    title: "开始心理学本科学习",
-    description: "在XX大学心理学系开始本科学习之旅，接触基础心理学理论与实验方法。",
-    category: "study",
-    image: "/images/psychology/university.jpg"
+    date: "2024-04",
+    title: "实验大赛获奖",
+    description: "感谢我的指导老师Yuki和我的同学们！",
+    category: "competition",
+    image: "/hu0jiang-1.jpg"
   },
   {
-    date: "2021-06",
-    title: "首次心理咨询实践",
-    description: "在校心理咨询中心进行首次实践，学习基本咨询技巧与伦理规范。",
-    category: "practice",
-    image: "/images/psychology/counseling.jpg"
-  },
-  {
-    date: "2022-03",
-    title: "获得心理咨询师证书",
-    description: "通过国家心理咨询师资格考试，获得三级心理咨询师证书。",
-    category: "certification",
-    image: "/images/psychology/certificate.jpg"
-  },
-  {
-    date: "2023-01",
-    title: "发表首篇研究论文",
-    description: "在《心理学报》发表首篇研究论文，探讨青少年心理健康问题。",
+    date: "2024-09",
+    title: "发表一区SCI论文",
+    description: "感谢指导老师！我爱科研！",
     category: "research",
-    image: "/images/psychology/research.jpg"
+    image: "/SCI-1.jpg"
   }
 ];
 
 const categoryColors = {
   study: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
   practice: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-  certification: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+  competition: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
   research: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
 };
 
@@ -113,7 +99,7 @@ export default function TimelinePage() {
                   <span className={`mb-2 inline-block rounded-full px-3 py-1 text-sm font-medium ${categoryColors[event.category]}`}>
                     {event.category === "study" ? "学习" :
                      event.category === "practice" ? "实践" :
-                     event.category === "certification" ? "认证" : "研究"}
+                     event.category === "competition" ? "比赛" : "研究"}
                   </span>
                   <time className="mb-2 block text-sm text-gray-500 dark:text-gray-400">{event.date}</time>
                   <h3 className="mb-2 text-xl font-bold text-gray-800 dark:text-white">{event.title}</h3>
@@ -122,7 +108,7 @@ export default function TimelinePage() {
                     <img 
                       src={event.image} 
                       alt={event.title}
-                      className="mt-4 h-48 w-full rounded-lg object-cover"
+                      className="mt-4 w-full rounded-lg object-contain h-auto max-h-[400px]"
                     />
                   )}
                 </div>

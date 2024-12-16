@@ -14,7 +14,7 @@ export default function PsychologyPage() {
       title: "时间线",
       subTitle: "我与心理·时间线",
       description: "记录心理学学习与成长的历程",
-      icon: "/icons/timeline.svg",
+      icon: "/xinli1.png",
       link: "/psychology/timeline"
     },
     {
@@ -22,7 +22,7 @@ export default function PsychologyPage() {
       title: "学习笔记",
       subTitle: "心理学学习笔记",
       description: "系统化的心理学知识分享",
-      icon: "/icons/notes.svg",
+      icon: "/xinli2.png",
       link: "/psychology/notes"
     },
     {
@@ -30,7 +30,7 @@ export default function PsychologyPage() {
       title: "辅助工具",
       subTitle: "心理学辅助工具",
       description: "实用的心理学测评与练习工具",
-      icon: "/icons/tools.svg",
+      icon: "/xinli3.png",
       link: "/psychology/tools"
     },
     {
@@ -38,7 +38,7 @@ export default function PsychologyPage() {
       title: "社区",
       subTitle: "心理学BBS社区",
       description: "心理学爱好者的交流平台",
-      icon: "/icons/community.svg",
+      icon: "/xilin4.png",
       link: "/psychology/community"
     }
   ];
@@ -106,9 +106,9 @@ export default function PsychologyPage() {
                   <Image
                     src={section.icon}
                     alt={section.title}
-                    width={24}
-                    height={24}
-                    className="text-blue-500 dark:text-blue-400"
+                    width={42}
+                    height={42}
+                    className="w-full h-full object-cover rounded-full"
                   />
                 </div>
                 <h3 className="mb-1 text-lg font-medium text-gray-600 dark:text-gray-400">
@@ -132,44 +132,7 @@ export default function PsychologyPage() {
       {/* 页脚 */}
       <footer className="mt-20 bg-gray-50 py-8 dark:bg-gray-900">
         <div className="container mx-auto px-4">
-          <div className="grid gap-8 md:grid-cols-4">
-            <div>
-              <h3 className="mb-4 text-lg font-bold text-gray-800 dark:text-white">关于</h3>
-              <ul className="space-y-2 text-gray-600 dark:text-gray-400">
-                <li><Link href="/psychology/about">关于我</Link></li>
-                <li><Link href="/psychology/contact">联系我们</Link></li>
-                <li><Link href="/psychology/faq">常见问题</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-4 text-lg font-bold text-gray-800 dark:text-white">法律</h3>
-              <ul className="space-y-2 text-gray-600 dark:text-gray-400">
-                <li><Link href="/psychology/privacy">隐私政策</Link></li>
-                <li><Link href="/psychology/terms">使用条款</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-4 text-lg font-bold text-gray-800 dark:text-white">友情链接</h3>
-              <ul className="space-y-2 text-gray-600 dark:text-gray-400">
-                <li><a href="#" target="_blank" rel="noopener noreferrer">中国心理学会</a></li>
-                <li><a href="#" target="_blank" rel="noopener noreferrer">心理学期刊网</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-4 text-lg font-bold text-gray-800 dark:text-white">关注我们</h3>
-              <div className="flex space-x-4">
-                <a href="#" className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">
-                  <span className="sr-only">微信</span>
-                  {/* 微信图标 */}
-                </a>
-                <a href="#" className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">
-                  <span className="sr-only">微博</span>
-                  {/* 微博图标 */}
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className="mt-8 border-t border-gray-200 pt-8 text-center text-gray-600 dark:border-gray-700 dark:text-gray-400">
+          <div className="mt-8 text-center text-gray-600 dark:text-gray-400">
             <p>© Hasakiikii. All rights reserved.</p>
           </div>
         </div>

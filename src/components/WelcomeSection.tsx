@@ -17,6 +17,18 @@ const WelcomeSection = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/10 animate-pulse"></div>
       </div>
 
+      {/* 返回按钮 */}
+      <div className="absolute top-4 right-4 z-[100]">
+        <Link 
+          href="/"
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-all duration-200 text-white"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </Link>
+      </div>
+
       {/* 主要内容 */}
       <div className={`relative flex items-center justify-center min-h-screen transition-opacity duration-1000 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
         <div className="flex flex-col items-center space-y-12 px-4 py-8 max-w-4xl mx-auto">
