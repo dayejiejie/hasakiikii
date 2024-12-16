@@ -46,10 +46,11 @@ const nextConfig = {
         protocol: "https",
         hostname: "pixiv.re",
       },
+      {
+        protocol: "https",
+        hostname: "**",
+      }
     ],
-  },
-  server: {
-    port: 7899
   }
 };
 

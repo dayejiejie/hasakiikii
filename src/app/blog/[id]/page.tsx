@@ -9,6 +9,7 @@ import { AdminAuth } from "@/components/AdminAuth/AdminAuth";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
+import Image from 'next/image';
 
 interface BlogPost {
   id: string;
@@ -123,27 +124,43 @@ export default function BlogPostPage() {
               
               if (!imgProps.src) return null;
               
+              // 处理 base64 图片
+              if (imgProps.src.startsWith('data:image')) {
+                return (
+                  <div className="flex justify-center my-4">
+                    <img 
+                      src={imgProps.src}
+                      alt={imgProps.alt || ''}
+                      className="max-w-full h-auto rounded-lg shadow-lg"
+                      style={{ maxHeight: '600px' }}
+                      loading="lazy"
+                    />
+                  </div>
+                );
+              }
+              
+              // 处理外部图片链接
               return (
-                <img 
-                  src={imgProps.src}
-                  alt={imgProps.alt || ''}
-                  className="mx-auto my-4 max-w-full h-auto rounded-lg shadow-lg"
-                  style={{ maxHeight: '600px' }}
-                  loading="lazy"
-                />
+                <div className="flex justify-center my-4">
+                  <Image 
+                    src={imgProps.src}
+                    alt={imgProps.alt || ''}
+                    width={800}
+                    height={600}
+                    className="max-w-full h-auto rounded-lg shadow-lg"
+                    style={{ maxHeight: '600px', objectFit: 'contain' }}
+                    loading="lazy"
+                  />
+                </div>
               );
             },
             p: ({ node, children, ...props }) => {
               const hasImg = React.Children.toArray(children).some(
-                child => React.isValidElement(child) && child.type === 'img'
+                child => React.isValidElement(child) && (child.type === 'img' || child.type === Image)
               );
               
               if (hasImg) {
-                return (
-                  <div className="flex justify-center my-4" {...props}>
-                    {children}
-                  </div>
-                );
+                return <>{children}</>;
               }
               
               return (
@@ -152,16 +169,24 @@ export default function BlogPostPage() {
                 </p>
               );
             },
-            video: ({ node, ...props }) => (
-              <div className="flex justify-center">
-                <video
-                  className="max-w-full rounded-lg shadow-lg my-4"
-                  style={{ maxHeight: '600px' }}
-                  controls
-                  {...props}
-                />
-              </div>
-            ),
+            video: ({ node, ...props }) => {
+              const videoProps = props as { src?: string; controls?: boolean; autoPlay?: boolean };
+              if (!videoProps.src) return null;
+
+              return (
+                <div className="flex justify-center my-4">
+                  <video
+                    src={videoProps.src}
+                    className="max-w-full rounded-lg shadow-lg"
+                    style={{ maxHeight: '600px' }}
+                    controls={videoProps.controls !== false}
+                    autoPlay={videoProps.autoPlay === true}
+                    loop
+                    playsInline
+                  />
+                </div>
+              );
+            },
             h1: ({ children }) => (
               <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">{children}</h1>
             ),
