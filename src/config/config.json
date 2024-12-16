@@ -1,0 +1,133 @@
+{
+  "name": "KASUIEの主页✨",
+  "favicon": "/favicon.ico",
+  "keywords": "remio,rem,mio,C.C.,KASUIEの次元,KASUIE的个人博客,KASUIE,个人主页,主页,个人记录,技术博客,个人生活",
+  "description": "KASUIEの次元，兴趣至上，内容随缘，个人主页",
+  "avatarConfig": {
+    "src": "/1.jpg",
+    "size": 150,
+    "round": "full",
+    "style": "wave",
+    "hoverAnimate": "top",
+    "hidden": false,
+    "aloneRight": false
+  },
+  "bgConfig": {
+    "bg": ["/prev.png"],
+    "mbg": ["/prev.png"],
+    "bgStyle": "snow",
+    "blur": "",
+    "cardOpacity": 0.1,
+    "carousel": true,
+    "carouselGap": 5,
+    "transitionTime": 0.7,
+    "transitionStyle": "default",
+    "autoAnimate": false
+  },
+  "globalStyle": {
+    "primaryColor": "#0dbf56",
+    "theme": "switcher",
+    "weather": true
+  },
+  "layoutConfig": {
+    "gapSize": "lg",
+    "style": "",
+    "istTransition": true
+  },
+  "subTitle": "",
+  "subTitleConfig": {
+    "typing": true,
+    "loading": false,
+    "loopTyping": true,
+    "shadow": false,
+    "typingCursor": true,
+    "showFrom": true,
+    "style": "desc",
+    "gapDelay": 0.05,
+    "content": "我是一个勇敢的活下去的小男孩",
+    "desc": "一个热爱探索的Boy;心理学，人工智能是我的最爱;机械飞升or数字生命？",
+    "typingGap": 3,
+    "heart": true
+  },
+  "links": [
+    {
+      "title": "github",
+      "color": "#000000",
+      "url": "https://github.com/dayejiejie",
+      "icon": "github"
+    },
+    {
+      "title": "email",
+      "color": "#fd3232",
+      "url": "mailto:2465335064@qq.com",
+      "icon": "email"
+    },
+    {
+      "title": "bilibili",
+      "color": "#0088cc",
+      "url": "https://space.bilibili.com/290463169/dynamic",
+      "icon": "bilibili"
+    }
+  ],
+  "sites": [
+    {
+      "icon": "/blog.jpg",
+      "title": "个人博客 / Personal Blog",
+      "url": "/blog",
+      "desc": "记录生活分享感悟"
+    },
+    {
+      "icon": "/psy.png",
+      "title": "心理学 / Psychology",
+      "url": "/psychology",
+      "desc": "探索心灵的奥秘"
+    },
+    {
+      "icon": "/ai.png",
+      "title": "人工智能 / AI",
+      "url": "/ai2",
+      "desc": "拥抱智能新时代"
+    },
+    {
+      "icon": "/more.png",
+      "title": "更多 / More",
+      "url": "#",
+      "desc": "发现更多精彩内容"
+    }
+  ],
+  "sitesConfig": {
+    "hidden": false,
+    "cardStyle": "",
+    "hoverBlur": true,
+    "hoverScale": true,
+    "hoverFlip": true,
+    "direction": "row",
+    "modal": false,
+    "modalTips": "",
+    "modalTitle": ""
+  },
+  "socialConfig": {
+    "autoAnimate": true,
+    "loading": "wave",
+    "ripple": true
+  },
+  "sliders": {
+    "data": [],
+    "title": "技能加点",
+    "color": "linear-gradient(to right, #ffafbd 0%, #c9ffbf 100%)",
+    "hidden": true,
+    "column": 4
+  },
+  "footer": {
+    "text": "特别鸣谢：@KASUIE",
+    "url": "https://kasuie.cc",
+    "direction": "col-reverse",
+    "isExternal": true
+  },
+  "resources": {
+    "css": [],
+    "js": [],
+    "bodyHtml": ""
+  },
+  "domain": "https://remio-home.vercel.app"
+}
