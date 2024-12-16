@@ -19,6 +19,7 @@ const withPWA = nextPWA({
 
 const nextConfig = {
   output: "standalone",
+  pageExtensions: ['js', 'jsx', 'ts', 'tsx'],
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -46,6 +47,9 @@ const nextConfig = {
         hostname: "pixiv.re",
       },
     ],
+  },
+  server: {
+    port: 7899
   }
 };
 

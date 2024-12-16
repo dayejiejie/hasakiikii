@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import dynamic from 'next/dynamic';
+import '@mdxeditor/editor/style.css';
 
-// 动态导入Markdown编辑器以避免SSR问题
-const MDEditor = dynamic(
-  () => import("@uiw/react-md-editor").then((mod) => mod.default),
+const MDXEditor = dynamic(
+  () => import('@mdxeditor/editor').then((mod) => mod.MDXEditor),
   { ssr: false }
 );
 
@@ -16,16 +16,70 @@ interface ArticleForm {
   title: string;
   category: string;
   content: string;
+  author: string;
 }
 
 const categories = ["技术", "随笔", "生活", "项目"];
+
+// 图片压缩函数
+const compressImage = async (file: File, maxSizeMB = 1): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // 如果图片大于 1200px，按比例缩小
+        const MAX_WIDTH = 1200;
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        // 压缩图片
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('图片压缩失败'));
+              return;
+            }
+            const compressedFile = new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            });
+            resolve(compressedFile);
+          },
+          'image/jpeg',
+          0.7 // 压缩质量，0.7 通常是一个好的平衡点
+        );
+      };
+      img.onerror = () => {
+        reject(new Error('图片加载失败'));
+      };
+    };
+    reader.onerror = () => {
+      reject(new Error('图片读取失败'));
+    };
+  });
+};
 
 export default function EditPage() {
   const router = useRouter();
   const [article, setArticle] = useState<ArticleForm>({
     title: "",
     category: categories[0],
-    content: ""
+    content: "",
+    author: "Hasakiikii"
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -34,15 +88,30 @@ export default function EditPage() {
   // 处理文件上传
   const handleFileUpload = async (file: File) => {
     try {
-      console.log('开始上传文件:', file.name);
-      const formData = new FormData();
-      formData.append('file', file);
-      // 使用临时ID，因为文章还未创建
-      const tempId = 'temp-' + Date.now();
-      formData.append('postId', tempId);
+      console.log('开始处理文件:', file.name);
       
-      console.log('发送请求到服务器...');
-      const response = await fetch('/api/upload', {
+      // 检查文件大小
+      const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+      if (file.size > MAX_SIZE) {
+        throw new Error('文件大小不能超过 5MB');
+      }
+
+      let fileToUpload = file;
+      if (file.type.startsWith('image/')) {
+        console.log('开始压缩图片...');
+        try {
+          fileToUpload = await compressImage(file);
+          console.log('图片压缩完成，压缩后大小:', fileToUpload.size);
+        } catch (error) {
+          console.warn('图片压缩失败，使用原图:', error);
+        }
+      }
+
+      console.log('开始上传文件...');
+      const formData = new FormData();
+      formData.append('file', fileToUpload);
+      
+      const response = await fetch('http://localhost:7899/api/upload', {
         method: 'POST',
         body: formData
       });
@@ -60,9 +129,9 @@ export default function EditPage() {
       }
 
       // 根据文件类型插入不同的 Markdown 语法
-      const insertText = data.type === 'image'
-        ? `![${file.name}](${data.url})`
-        : `<video controls src="${data.url}"></video>`;
+      const insertText = fileToUpload.type.startsWith('image/')
+        ? `![${fileToUpload.name}](${data.file.url})`
+        : `<video controls src="${data.file.url}"></video>`;
       
       setArticle(prev => ({
         ...prev,
@@ -120,22 +189,40 @@ export default function EditPage() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/blog', {
+      const postData = {
+        ...article,
+        readTime: `${Math.ceil(article.content.length / 500)} 分钟`,
+        excerpt: article.content.slice(0, 100) + "..."
+      };
+      
+      console.log('准备发送的文章数据:', postData);
+      
+      const response = await fetch('http://localhost:7899/api/blog', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(article),
+        body: JSON.stringify(postData),
       });
 
+      console.log('服务器响应状态:', response.status);
+      const data = await response.json();
+      console.log('服务器响应数据:', data);
+
       if (!response.ok) {
-        throw new Error('发布失败');
+        throw new Error(data.error || '发布失败');
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || '发布失败');
       }
 
       router.push('/blog');
     } catch (error) {
       console.error('发布文章失败:', error);
-      setError('发布失败，请重试');
+      const errorMessage = error instanceof Error ? error.message : '发布失败，请重试';
+      console.error('错误详情:', errorMessage);
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -223,21 +310,12 @@ export default function EditPage() {
               />
             </div>
 
-            {/* Markdown编辑器 */}
-            <div data-color-mode="light" className="dark:hidden">
-              <MDEditor
-                value={article.content}
-                onChange={(value) => setArticle({ ...article, content: value || "" })}
-                height={500}
-                preview="edit"
-              />
-            </div>
-            <div data-color-mode="dark" className="hidden dark:block">
-              <MDEditor
-                value={article.content}
-                onChange={(value) => setArticle({ ...article, content: value || "" })}
-                height={500}
-                preview="edit"
+            {/* MDX 编辑器 */}
+            <div className="prose prose-sm max-w-none dark:prose-invert">
+              <MDXEditor
+                markdown={article.content}
+                onChange={(value: string) => setArticle({ ...article, content: value })}
+                contentEditableClassName="min-h-[500px] w-full rounded-lg border border-gray-200 p-4 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
               />
             </div>
           </form>

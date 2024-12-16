@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Comments } from "@/components/comments/Comments";
 import { AdminAuth } from "@/components/AdminAuth/AdminAuth";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 
 interface BlogPost {
   id: string;
@@ -33,6 +36,7 @@ export default function BlogPostPage() {
 
   const fetchPost = async () => {
     try {
+      console.log('开始获取文章:', params.id);
       const response = await fetch(`/api/blog?id=${params.id}`);
       if (!response.ok) {
         throw new Error("文章不存在");
@@ -42,9 +46,13 @@ export default function BlogPostPage() {
       if (!post) {
         throw new Error("文章不存在");
       }
+
+      console.log('获取到的文章数据:', post);
+      
       setPost({
         ...post,
         date: post.createdAt,
+        content: post.content
       });
     } catch (error) {
       console.error("获取文章失败:", error);
@@ -98,6 +106,103 @@ export default function BlogPostPage() {
   const handleAuthCancel = () => {
     setShowAdminAuth(false);
     setAuthAction(null);
+  };
+
+  const renderContent = () => {
+    if (!post?.content) return null;
+
+    return (
+      <div className="prose prose-lg dark:prose-invert max-w-none">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeRaw]}
+          components={{
+            img: ({ node, ...props }) => {
+              const imgProps = props as { src?: string; alt?: string };
+              console.log('渲染图片:', { props: imgProps });
+              
+              if (!imgProps.src) return null;
+              
+              return (
+                <img 
+                  src={imgProps.src}
+                  alt={imgProps.alt || ''}
+                  className="mx-auto my-4 max-w-full h-auto rounded-lg shadow-lg"
+                  style={{ maxHeight: '600px' }}
+                  loading="lazy"
+                />
+              );
+            },
+            p: ({ node, children, ...props }) => {
+              const hasImg = React.Children.toArray(children).some(
+                child => React.isValidElement(child) && child.type === 'img'
+              );
+              
+              if (hasImg) {
+                return (
+                  <div className="flex justify-center my-4" {...props}>
+                    {children}
+                  </div>
+                );
+              }
+              
+              return (
+                <p className="mb-4 text-gray-800 dark:text-gray-200" {...props}>
+                  {children}
+                </p>
+              );
+            },
+            video: ({ node, ...props }) => (
+              <div className="flex justify-center">
+                <video
+                  className="max-w-full rounded-lg shadow-lg my-4"
+                  style={{ maxHeight: '600px' }}
+                  controls
+                  {...props}
+                />
+              </div>
+            ),
+            h1: ({ children }) => (
+              <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">{children}</h1>
+            ),
+            h2: ({ children }) => (
+              <h2 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white">{children}</h2>
+            ),
+            h3: ({ children }) => (
+              <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">{children}</h3>
+            ),
+            a: ({ children, href }) => (
+              <a href={href} className="text-blue-500 hover:text-blue-600 dark:text-blue-400" target="_blank" rel="noopener noreferrer">
+                {children}
+              </a>
+            ),
+            ul: ({ children }) => (
+              <ul className="list-disc list-inside mb-4 text-gray-800 dark:text-gray-200">{children}</ul>
+            ),
+            ol: ({ children }) => (
+              <ol className="list-decimal list-inside mb-4 text-gray-800 dark:text-gray-200">{children}</ol>
+            ),
+            blockquote: ({ children }) => (
+              <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 my-4 italic text-gray-700 dark:text-gray-300">
+                {children}
+              </blockquote>
+            ),
+            code: ({ children }) => (
+              <code className="bg-gray-100 dark:bg-gray-800 rounded px-2 py-1 text-sm font-mono">
+                {children}
+              </code>
+            ),
+            pre: ({ children }) => (
+              <pre className="bg-gray-100 dark:bg-gray-800 rounded p-4 my-4 overflow-x-auto">
+                {children}
+              </pre>
+            )
+          }}
+        >
+          {post.content}
+        </ReactMarkdown>
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -180,62 +285,7 @@ export default function BlogPostPage() {
 
           {/* 文章内容 */}
           <div className="prose prose-lg mx-auto dark:prose-invert">
-            <div className="markdown-content px-4 py-6 text-gray-800 dark:text-gray-200">
-              {post.content && post.content.split('\n').map((line, index) => {
-                // 检查是否是图片标记 ![alt](/uploads/xxx.png)
-                if (line.startsWith('![') && line.includes('](/uploads/')) {
-                  const altMatch = line.match(/!\[(.*?)\]/);
-                  const srcMatch = line.match(/\((\/uploads\/.*?)\)/);
-                  const alt = altMatch ? altMatch[1] : '';
-                  const src = srcMatch ? srcMatch[1] : '';
-                  
-                  return (
-                    <div key={index} className="my-6">
-                      <img 
-                        src={src} 
-                        alt={alt} 
-                        className="mx-auto max-w-full rounded-lg shadow-lg"
-                        style={{ maxHeight: '600px' }}
-                      />
-                      {alt && (
-                        <p className="mt-2 text-center text-sm text-gray-500">
-                          {alt}
-                        </p>
-                      )}
-                    </div>
-                  );
-                }
-                
-                // 检查是否是视频标记 <video controls src="/uploads/xxx.mp4"></video>
-                if (line.includes('<video') && line.includes('src="/uploads/')) {
-                  const srcMatch = line.match(/src="(\/uploads\/.*?)"/);
-                  const src = srcMatch ? srcMatch[1] : '';
-                  
-                  return (
-                    <div key={index} className="my-6">
-                      <video 
-                        controls 
-                        src={src}
-                        className="mx-auto max-w-full rounded-lg shadow-lg"
-                        style={{ maxHeight: '600px' }}
-                      />
-                    </div>
-                  );
-                }
-                
-                // 普通文本段落
-                if (line.trim()) {
-                  return (
-                    <p key={index} className="mb-4 whitespace-pre-wrap">
-                      {line}
-                    </p>
-                  );
-                }
-                
-                // 空行
-                return <br key={index} />;
-              })}
-            </div>
+            {renderContent()}
           </div>
 
           {/* 评论区 */}

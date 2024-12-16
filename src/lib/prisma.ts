@@ -1,9 +1,22 @@
 import { PrismaClient } from '@prisma/client';
+import { Pool } from 'pg';
+
+const pool = new Pool({
+  connectionString: process.env.POSTGRES_PRISMA_URL,
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 30000,
+});
 
 const prismaClientSingleton = () => {
   return new PrismaClient({
-    log: ['error'],
-    errorFormat: 'minimal',
+    log: ['error', 'warn'],
+    errorFormat: 'pretty',
+    datasources: {
+      db: {
+        url: process.env.POSTGRES_URL_NON_POOLING
+      }
+    }
   });
 };
 

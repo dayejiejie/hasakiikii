@@ -5,12 +5,7 @@ import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-
-// 动态导入Markdown编辑器以避免SSR问题
-const MDEditor = dynamic(
-  () => import("@uiw/react-md-editor").then((mod) => mod.default),
-  { ssr: false }
-);
+import { MDXEditor } from '@mdxeditor/editor';
 
 interface ArticleForm {
   title: string;
@@ -42,7 +37,12 @@ export default function EditPage() {
       if (!response.ok) {
         throw new Error("文章不存在");
       }
-      const post = await response.json();
+      const data = await response.json();
+      const post = data.post || data.posts?.[0];
+      if (!post) {
+        throw new Error("文章不存在");
+      }
+      
       setArticle({
         title: post.title,
         category: post.category,
@@ -59,7 +59,6 @@ export default function EditPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // 表单验证
     if (!article.title.trim()) {
       setError("请输入文章标题");
       return;
@@ -79,7 +78,7 @@ export default function EditPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          id: Number(params.id),
+          id: params.id,
           ...article,
         }),
       });
@@ -167,20 +166,11 @@ export default function EditPage() {
             </select>
 
             {/* Markdown编辑器 */}
-            <div data-color-mode="light" className="dark:hidden">
-              <MDEditor
-                value={article.content}
-                onChange={(value) => setArticle({ ...article, content: value || "" })}
-                height={500}
-                preview="edit"
-              />
-            </div>
-            <div data-color-mode="dark" className="hidden dark:block">
-              <MDEditor
-                value={article.content}
-                onChange={(value) => setArticle({ ...article, content: value || "" })}
-                height={500}
-                preview="edit"
+            <div className="prose prose-lg dark:prose-invert max-w-none">
+              <MDXEditor
+                markdown={article.content}
+                onChange={(content: string) => setArticle({ ...article, content })}
+                contentEditableClassName="min-h-[500px] outline-none"
               />
             </div>
           </form>

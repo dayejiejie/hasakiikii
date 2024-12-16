@@ -10,8 +10,7 @@ export async function POST(request: Request) {
     console.log('开始处理文件上传...');
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    const postId = formData.get('postId') as string;
-
+    
     if (!file) {
       console.error('没有找到上传的文件');
       return NextResponse.json({ error: '没有文件被上传' }, { status: 400 });
@@ -37,14 +36,16 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(bytes);
     const base64Data = buffer.toString('base64');
 
-    // 保存文件信息到数据库
+    // 创建一个临时的 data URL
+    const dataUrl = `data:${file.type};base64,${base64Data}`;
+
+    // 保存文件信息到数据库，不关联到文章
     const media = await prisma.media.create({
       data: {
         type: file.type,
-        url: base64Data,
+        url: dataUrl,
         filename: fileName,
-        originalName: file.name,
-        postId: postId || null
+        originalName: file.name
       }
     });
 
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
       file: {
         id: media.id,
         filename: fileName,
-        url: base64Data,
+        url: dataUrl,
         type: file.type
       }
     });
