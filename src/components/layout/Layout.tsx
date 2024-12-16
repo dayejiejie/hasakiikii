@@ -21,8 +21,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen w-full">
       <MainEffect 
-        bgArr={[bgConfig.bg]}
-        mbgArr={[bgConfig.mbg]}
+        bgArr={[bgConfig.bg || '']}
+        mbgArr={[bgConfig.mbg || '']}
         bgStyle={bgConfig.bgStyle}
         blur={bgConfig.blur}
         audio={bgConfig.audio}

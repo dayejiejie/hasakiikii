@@ -15,8 +15,17 @@ import StyledRegistry from "./StyleJsxProvider";
 import Script from "next/script";
 import { ConfigProvider } from './ConfigProvider';
 
+const defaultAppConfig: AppConfig = {
+  name: '',
+  bgConfig: {},
+  globalStyle: {},
+  resources: {},
+  links: [],
+  sites: []
+};
+
 export function AppProviders({
-  appConfig,
+  appConfig = defaultAppConfig,
   children,
   ver,
 }: Readonly<{

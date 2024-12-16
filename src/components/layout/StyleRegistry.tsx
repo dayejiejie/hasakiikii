@@ -12,7 +12,7 @@ import { useContext } from "react";
 
 export default function StyleRegistry() {
   const context = useContext(ConfigContext);
-  const { appConfig } = context || {};
+  const { appConfig = {} as AppConfig } = context || {};
 
   const defaultFont = `
     @font-face {
@@ -23,7 +23,7 @@ export default function StyleRegistry() {
       font-style: normal;
     }
   `;
-  let { fonts, fallback } = appConfig.globalStyle || {};
+  let { fonts, fallback } = appConfig?.globalStyle || {};
 
   if (fonts || fallback) {
     const arr: any = [];

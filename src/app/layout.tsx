@@ -19,8 +19,9 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  userScalable: 'no',
-  viewportFit: 'cover'
+  userScalable: false,
+  viewportFit: 'cover',
+  themeColor: '#ffffff'
 };
 
 export const metadata: Metadata = {
@@ -28,8 +29,7 @@ export const metadata: Metadata = {
   description: 'Your personal AI assistant',
   icons: {
     icon: '/ico.png',
-  },
-  themeColor: '#ffffff',
+  }
 };
 
 export default async function RootLayout({
