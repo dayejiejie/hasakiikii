@@ -7,11 +7,12 @@
  */
 "use client";
 import { AppConfig } from "@/config/config";
-import { ConfigProvider } from "@/providers";
+import { ConfigContext } from "@/providers/ConfigProvider";
 import { useContext } from "react";
+
 export default function StyleRegistry() {
-  const { appConfig } =
-    (useContext(ConfigProvider) as { appConfig: AppConfig }) || {};
+  const context = useContext(ConfigContext);
+  const { appConfig } = context || {};
 
   const defaultFont = `
     @font-face {

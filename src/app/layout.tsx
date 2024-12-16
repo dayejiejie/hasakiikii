@@ -5,8 +5,8 @@
  * @LastEditTime: 2024-11-28 21:01:15
  * @Description:
  */
-import type { Metadata } from "next";
-import { Layout } from "@/components/layout/Layout";
+import type { Metadata, Viewport } from "next";
+import Layout from "@/components/layout/Layout";
 import { AppProviders } from "@/providers";
 import { getConfig } from "@/lib/config";
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
@@ -15,32 +15,22 @@ import "@/styles/index.css";
 import 'katex/dist/katex.min.css';
 import StyleRegistry from "@/components/layout/StyleRegistry";
 
-export const metadata = {
-  title: 'Hasakiikii的主页',
-  description: 'Your personal AI assistant',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: 'no',
-    viewportFit: 'cover'
-  },
-  themeColor: '#ffffff'
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: 'no',
+  viewportFit: 'cover'
 };
 
-export async function generateMetadata() {
-  const appConfig = await getConfig("config.json");
-
-  return {
-    title: 'Hasakiikii的主页',
-    description: appConfig.description,
-    keywords: appConfig.keywords,
-    icons: {
-      icon: '/ico.png',
-    },
-    other: { "baidu-site-verification": process.env.BaiduSiteVerify || "" },
-  } satisfies Metadata;
-}
+export const metadata: Metadata = {
+  title: 'Hasakiikii的主页',
+  description: 'Your personal AI assistant',
+  icons: {
+    icon: '/ico.png',
+  },
+  themeColor: '#ffffff',
+};
 
 export default async function RootLayout({
   children,
@@ -50,9 +40,6 @@ export default async function RootLayout({
   const appConfig = await getConfig("config.json");
   return (
     <html lang="zh-CN" suppressHydrationWarning>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-      </head>
       <body className={`mio-scroll mio-fonts overflow-y-auto`}>
         <AppProviders appConfig={appConfig} ver={process.env.VERSION || ""}>
           <Layout>{children}</Layout>

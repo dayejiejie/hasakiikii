@@ -12,10 +12,8 @@ import { useRouter } from "next/navigation";
 import { NextUIProvider } from "@nextui-org/system";
 import { AppConfig } from "@/config/config";
 import StyledRegistry from "./StyleJsxProvider";
-import { createContext } from "react";
 import Script from "next/script";
-
-export const ConfigProvider = createContext({});
+import { ConfigProvider } from './ConfigProvider';
 
 export function AppProviders({
   appConfig,
@@ -56,9 +54,9 @@ export function AppProviders({
               <Script key={v} src={v} strategy={"afterInteractive"} />
             ))
           : null}
-        <ConfigProvider.Provider value={{ appConfig: appConfig }}>
+        <ConfigProvider appConfig={appConfig} ver={ver || ""}>
           <StyledRegistry>{children}</StyledRegistry>
-        </ConfigProvider.Provider>
+        </ConfigProvider>
       </ThemeProvider>
     </NextUIProvider>
   );
