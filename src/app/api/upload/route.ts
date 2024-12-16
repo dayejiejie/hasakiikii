@@ -1,12 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export const config = {
-  api: {
-    bodyParser: false,
-    sizeLimit: '10mb',
-  },
-};
+// 新的配置方式
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
@@ -18,6 +15,10 @@ export async function POST(request: Request) {
     if (!file) {
       console.error('没有找到上传的文件');
       return NextResponse.json({ error: '没有文件被上传' }, { status: 400 });
+    }
+
+    if (file.size > 10 * 1024 * 1024) { // 10MB
+      return NextResponse.json({ error: '文件大小超过限制' }, { status: 400 });
     }
 
     console.log('文件信息:', {
