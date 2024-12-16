@@ -36,8 +36,15 @@ export default function BlogPostPage() {
       if (!response.ok) {
         throw new Error("文章不存在");
       }
-      const post = await response.json();
-      setPost(post);
+      const data = await response.json();
+      const post = data.post || data.posts?.[0];
+      if (!post) {
+        throw new Error("文章不存在");
+      }
+      setPost({
+        ...post,
+        date: post.createdAt,
+      });
     } catch (error) {
       console.error("获取文章失败:", error);
     } finally {
@@ -173,11 +180,60 @@ export default function BlogPostPage() {
           {/* 文章内容 */}
           <div className="prose prose-lg mx-auto dark:prose-invert">
             <div className="markdown-content px-4 py-6 text-gray-800 dark:text-gray-200">
-              {post.content.split('\n').map((paragraph, index) => (
-                <p key={index} className="mb-4">
-                  {paragraph}
-                </p>
-              ))}
+              {post.content && post.content.split('\n').map((line, index) => {
+                // 检查是否是图片标记 ![alt](/uploads/xxx.png)
+                if (line.startsWith('![') && line.includes('](/uploads/')) {
+                  const altMatch = line.match(/!\[(.*?)\]/);
+                  const srcMatch = line.match(/\((\/uploads\/.*?)\)/);
+                  const alt = altMatch ? altMatch[1] : '';
+                  const src = srcMatch ? srcMatch[1] : '';
+                  
+                  return (
+                    <div key={index} className="my-6">
+                      <img 
+                        src={src} 
+                        alt={alt} 
+                        className="mx-auto max-w-full rounded-lg shadow-lg"
+                        style={{ maxHeight: '600px' }}
+                      />
+                      {alt && (
+                        <p className="mt-2 text-center text-sm text-gray-500">
+                          {alt}
+                        </p>
+                      )}
+                    </div>
+                  );
+                }
+                
+                // 检查是否是视频标记 <video controls src="/uploads/xxx.mp4"></video>
+                if (line.includes('<video') && line.includes('src="/uploads/')) {
+                  const srcMatch = line.match(/src="(\/uploads\/.*?)"/);
+                  const src = srcMatch ? srcMatch[1] : '';
+                  
+                  return (
+                    <div key={index} className="my-6">
+                      <video 
+                        controls 
+                        src={src}
+                        className="mx-auto max-w-full rounded-lg shadow-lg"
+                        style={{ maxHeight: '600px' }}
+                      />
+                    </div>
+                  );
+                }
+                
+                // 普通文本段落
+                if (line.trim()) {
+                  return (
+                    <p key={index} className="mb-4 whitespace-pre-wrap">
+                      {line}
+                    </p>
+                  );
+                }
+                
+                // 空行
+                return <br key={index} />;
+              })}
             </div>
           </div>
 

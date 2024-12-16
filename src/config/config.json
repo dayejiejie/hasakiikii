@@ -34,7 +34,7 @@
   },
   "globalStyle": {
     "primaryColor": "#0dbf56",
-    "theme": "switcher",
+    "theme": "light",
     "weather": true
   },
   "layoutConfig": {

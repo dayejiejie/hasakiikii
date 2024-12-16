@@ -196,7 +196,7 @@ export function Links({
     <motion.div
       {...motions}
       className={clsx(
-        "group/links z-[1] mt-3 flex flex-col sm:flex-row sm:flex-wrap sm:justify-between w-full gap-3 sm:gap-4 md:mt-8",
+        "group/links z-[100] mt-3 flex flex-col sm:flex-row sm:flex-wrap sm:justify-between w-full gap-3 sm:gap-4 md:mt-8",
         warpClass
       )}
     >

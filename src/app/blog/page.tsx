@@ -33,6 +33,11 @@ export default function BlogPage() {
     try {
       const response = await fetch("/api/blog");
       const data = await response.json();
+      if (!data || !data.posts) {
+        console.error("获取文章列表失败: 返回数据格式错误", data);
+        setPosts([]);
+        return;
+      }
       // 为每篇文章生成摘要
       const postsWithExcerpt = data.posts.map((post: BlogPost) => ({
         ...post,
@@ -41,6 +46,7 @@ export default function BlogPage() {
       setPosts(postsWithExcerpt);
     } catch (error) {
       console.error("获取文章列表失败:", error);
+      setPosts([]);
     } finally {
       setIsLoading(false);
     }
@@ -132,7 +138,7 @@ export default function BlogPage() {
         </div>
 
         {/* 博客文章列表 */}
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
           {isLoading ? (
             // 加载状态
             Array(6).fill(0).map((_, index) => (
@@ -144,7 +150,7 @@ export default function BlogPage() {
             ))
           ) : filteredPosts.length === 0 ? (
             // 无文章状态
-            <div className="col-span-3 text-center text-gray-500 dark:text-gray-400">
+            <div className="col-span-full text-center text-gray-500 dark:text-gray-400">
               暂无文章
             </div>
           ) : (
@@ -155,7 +161,7 @@ export default function BlogPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   whileHover={{ y: -5 }}
-                  className="group cursor-pointer overflow-hidden rounded-xl bg-white p-6 shadow-lg transition-shadow hover:shadow-xl dark:bg-gray-800"
+                  className="group h-full cursor-pointer overflow-hidden rounded-xl bg-white p-6 shadow-lg transition-shadow hover:shadow-xl dark:bg-gray-800"
                 >
                   <div className="mb-4 flex items-center justify-between">
                     <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
@@ -169,9 +175,9 @@ export default function BlogPage() {
                     {post.title}
                   </h2>
                   <p className="mb-4 text-gray-600 dark:text-gray-300">{post.excerpt}</p>
-                  <div className="flex items-center justify-between">
+                  <div className="mt-auto flex items-center justify-between">
                     <span className="text-sm text-gray-500 dark:text-gray-400">{post.readTime} 阅读</span>
-                    <span className="text-blue-500 group-hover:translate-x-2 dark:text-blue-400">
+                    <span className="text-blue-500 transition-transform group-hover:translate-x-2 dark:text-blue-400">
                       阅读更多 →
                     </span>
                   </div>

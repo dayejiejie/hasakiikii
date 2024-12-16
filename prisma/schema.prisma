@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Danmaku {
+  id        String   @id @default(cuid())
+  text      String
+  name      String
+  color     String
+  top       Float
+  createdAt DateTime @default(now())
+}
+
+model BlogPost {
+  id        String    @id @default(cuid())
+  title     String
+  content   String
+  category  String
+  excerpt   String?
+  readTime  String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  published Boolean   @default(true)
+  author    String
+  media     Media[]
+  comments  Comment[]
+}
+
+model Media {
+  id           String    @id @default(cuid())
+  type         String    // "image" or "video"
+  url          String
+  filename     String
+  originalName String
+  createdAt    DateTime  @default(now())
+  postId       String?   // 使其可为空，因为可能是临时上传
+  post         BlogPost? @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  content   String
+  author    String
+  createdAt DateTime  @default(now())
+  postId    String
+  post      BlogPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
+} 

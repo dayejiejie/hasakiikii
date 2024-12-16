@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -29,42 +29,113 @@ export default function EditPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [uploadingFiles, setUploadingFiles] = useState<File[]>([]);
+
+  // 处理文件上传
+  const handleFileUpload = async (file: File) => {
+    try {
+      console.log('开始上传文件:', file.name);
+      const formData = new FormData();
+      formData.append('file', file);
+      // 使用临时ID，因为文章还未创建
+      const tempId = 'temp-' + Date.now();
+      formData.append('postId', tempId);
+      
+      console.log('发送请求到服务器...');
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      console.log('服务器响应状态:', response.status);
+      const data = await response.json();
+      console.log('服务器响应数据:', data);
+      
+      if (!response.ok) {
+        throw new Error(data.error || data.details || '上传失败');
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || data.details || '上传失败');
+      }
+
+      // 根据文件类型插入不同的 Markdown 语法
+      const insertText = data.type === 'image'
+        ? `![${file.name}](${data.url})`
+        : `<video controls src="${data.url}"></video>`;
+      
+      setArticle(prev => ({
+        ...prev,
+        content: prev.content + '\n' + insertText + '\n'
+      }));
+
+      console.log('文件上传成功');
+    } catch (error) {
+      console.error('文件上传失败:', error);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : '文件上传失败，请重试';
+      console.error('错误详情:', errorMessage);
+      setError(errorMessage);
+    }
+  };
+
+  // 处理文件拖放
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files);
+    files.forEach(handleFileUpload);
+  }, []);
+
+  // 处理粘贴
+  const handlePaste = useCallback(async (e: ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.indexOf('image') !== -1) {
+        const file = item.getAsFile();
+        if (file) {
+          await handleFileUpload(file);
+        }
+      }
+    }
+  }, []);
+
+  // 添加粘贴事件监听
+  useEffect(() => {
+    document.addEventListener('paste', handlePaste);
+    return () => {
+      document.removeEventListener('paste', handlePaste);
+    };
+  }, [handlePaste]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // 表单验证
-    if (!article.title.trim()) {
-      setError("请输入文章标题");
-      return;
-    }
-    if (!article.content.trim()) {
-      setError("请输入文章内容");
+    if (!article.title.trim() || !article.content.trim()) {
+      setError("标题和内容不能为空");
       return;
     }
 
     setIsSubmitting(true);
-    setError("");
-
     try {
-      const response = await fetch("/api/blog", {
-        method: "POST",
+      const response = await fetch('/api/blog', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(article),
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        // 保存成功，跳转到博客列表页
-        router.push("/blog");
-      } else {
-        throw new Error(data.error || "保存失败");
+      if (!response.ok) {
+        throw new Error('发布失败');
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "保存文章时出错");
+
+      router.push('/blog');
+    } catch (error) {
+      console.error('发布文章失败:', error);
+      setError('发布失败，请重试');
     } finally {
       setIsSubmitting(false);
     }
@@ -129,6 +200,28 @@ export default function EditPage() {
                 </option>
               ))}
             </select>
+
+            {/* 文件上传区域 */}
+            <div
+              onDrop={handleDrop}
+              onDragOver={(e) => e.preventDefault()}
+              className="mb-4 rounded-lg border-2 border-dashed border-gray-300 p-4 text-center dark:border-gray-700"
+            >
+              <p className="text-gray-600 dark:text-gray-400">
+                拖放文件到此处，或者点击上传
+              </p>
+              <input
+                type="file"
+                accept="image/*,video/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    handleFileUpload(file);
+                  }
+                }}
+                className="mt-2"
+              />
+            </div>
 
             {/* Markdown编辑器 */}
             <div data-color-mode="light" className="dark:hidden">
