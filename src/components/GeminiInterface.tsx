@@ -521,14 +521,14 @@ const GeminiInterface: React.FC<Props> = ({
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div className="flex flex-col h-[100dvh] bg-white rounded-lg shadow-xl overflow-hidden">
       {/* 顶部导航栏 */}
-      <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-100">
-        <div className="flex items-center gap-4">
-          <div className="text-xl font-semibold text-gray-800">{aiName}</div>
+      <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-white border-b border-gray-100">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <div className="text-lg sm:text-xl font-semibold text-gray-800">{aiName}</div>
           <button
             onClick={() => setBilingual(!bilingual)}
-            className={`px-3 py-1 text-sm rounded-lg transition-all duration-200 ${
+            className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-lg transition-all duration-200 ${
               bilingual
                 ? 'bg-green-500 text-white'
                 : 'bg-gray-50 text-gray-700 border border-gray-200 hover:border-green-400'
@@ -537,12 +537,12 @@ const GeminiInterface: React.FC<Props> = ({
             双语模式
           </button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           {navigationItems.map((item, index) => (
             <Link
               key={index}
               href={item.href}
-              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200"
+              className="p-1.5 sm:p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200"
             >
               {item.icon}
             </Link>
@@ -552,9 +552,9 @@ const GeminiInterface: React.FC<Props> = ({
 
       {/* 视频预览 */}
       {isCapturing && (
-        <div className="relative bg-black p-4">
+        <div className="relative bg-black p-3 sm:p-4">
           <div className="max-w-3xl mx-auto">
-            <div className="relative w-full h-[360px] bg-black rounded-lg overflow-hidden">
+            <div className="relative w-full h-[240px] sm:h-[360px] bg-black rounded-lg overflow-hidden">
               <video
                 ref={videoRef}
                 className="absolute inset-0 w-full h-full object-contain"
@@ -562,17 +562,6 @@ const GeminiInterface: React.FC<Props> = ({
                 playsInline
                 muted
                 style={{ transform: 'none' }}
-                onError={(e) => {
-                  console.error('视频加载错误:', e);
-                }}
-                onPlay={() => console.log('视频开始播放')}
-                onLoadedMetadata={(e) => {
-                  console.log('视频元数据加载完成:', {
-                    width: e.currentTarget.videoWidth,
-                    height: e.currentTarget.videoHeight,
-                    readyState: e.currentTarget.readyState
-                  });
-                }}
               />
               {!videoRef.current?.srcObject && (
                 <div className="absolute inset-0 flex items-center justify-center text-white">
@@ -583,9 +572,9 @@ const GeminiInterface: React.FC<Props> = ({
             <div className="absolute top-4 right-4 flex gap-2">
               <button
                 onClick={stopCapture}
-                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 flex items-center gap-2"
+                className="bg-red-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-red-600 flex items-center gap-1 sm:gap-2 text-sm sm:text-base"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 sm:h-5 w-4 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 002 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 002 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
                 停止捕捉
@@ -599,7 +588,7 @@ const GeminiInterface: React.FC<Props> = ({
       <div className="flex-1 overflow-hidden">
         <div className="h-full flex flex-col">
           {/* 消息列表 */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 no-scrollbar">
             {messages.map((message, index) => (
               <div
                 key={index}
@@ -608,7 +597,7 @@ const GeminiInterface: React.FC<Props> = ({
                 }`}
               >
                 <div
-                  className={`max-w-[80%] p-4 rounded-2xl shadow-sm ${
+                  className={`max-w-[85%] sm:max-w-[75%] p-3 sm:p-4 rounded-2xl shadow-sm ${
                     message.role === 'user'
                       ? 'bg-green-500 text-white'
                       : 'bg-gray-50 text-gray-700 border border-gray-100'
@@ -620,7 +609,7 @@ const GeminiInterface: React.FC<Props> = ({
             ))}
             {loading && (
               <div className="flex justify-start">
-                <div className="max-w-[80%] p-4 rounded-2xl bg-gray-50 text-gray-700 border border-gray-100 shadow-sm">
+                <div className="max-w-[85%] sm:max-w-[75%] p-3 sm:p-4 rounded-2xl bg-gray-50 text-gray-700 border border-gray-100 shadow-sm">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
@@ -633,11 +622,11 @@ const GeminiInterface: React.FC<Props> = ({
           </div>
 
           {/* 输入区域 */}
-          <div className="border-t border-gray-100 p-4">
+          <div className="border-t border-gray-100 p-3 sm:p-4">
             <div className="max-w-4xl mx-auto">
               {imagePreview && (
-                <div className="mb-4 relative inline-block">
-                  <img src={imagePreview} alt="Selected" className="max-h-32 rounded-lg" />
+                <div className="mb-3 sm:mb-4 relative inline-block">
+                  <img src={imagePreview} alt="Selected" className="max-h-24 sm:max-h-32 rounded-lg" />
                   <button
                     onClick={handleImageRemove}
                     className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
@@ -649,7 +638,7 @@ const GeminiInterface: React.FC<Props> = ({
                 </div>
               )}
               {audioUrl && (
-                <div className="mb-4">
+                <div className="mb-3 sm:mb-4">
                   <audio ref={audioRef} src={audioUrl} controls className="w-full" />
                 </div>
               )}
@@ -659,7 +648,7 @@ const GeminiInterface: React.FC<Props> = ({
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder={selectedImage ? '请描述这张图片...' : '输入您的问题...'}
-                  className="flex-1 p-3 rounded-xl border border-gray-200 focus:border-green-400 focus:ring focus:ring-green-100 transition-all duration-200"
+                  className="flex-1 p-2 sm:p-3 rounded-xl border border-gray-200 focus:border-green-400 focus:ring focus:ring-green-100 transition-all duration-200 text-sm sm:text-base"
                 />
                 
                 {/* 音乐生成按钮 */}
@@ -667,7 +656,7 @@ const GeminiInterface: React.FC<Props> = ({
                   type="button"
                   onClick={generateMusic}
                   disabled={!input.trim() || isGeneratingMusic}
-                  className={`p-3 rounded-xl transition-all duration-200 ${
+                  className={`p-2 sm:p-3 rounded-xl transition-all duration-200 ${
                     !input.trim() || isGeneratingMusic
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-purple-500 text-white hover:bg-purple-600'
@@ -675,13 +664,13 @@ const GeminiInterface: React.FC<Props> = ({
                   title="生成音乐"
                 >
                   {isGeneratingMusic ? (
-                    <div className="animate-spin h-5 w-5">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <div className="animate-spin h-4 sm:h-5 w-4 sm:w-5">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-full w-full" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                       </svg>
                     </div>
                   ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 sm:h-5 w-4 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
                       <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                     </svg>
                   )}
@@ -692,28 +681,28 @@ const GeminiInterface: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={() => setShowCaptureOptions(!showCaptureOptions)}
-                    className="p-3 rounded-xl bg-gray-50 text-gray-700 border border-gray-200 hover:border-green-400 transition-all duration-200"
+                    className="p-2 sm:p-3 rounded-xl bg-gray-50 text-gray-700 border border-gray-200 hover:border-green-400 transition-all duration-200"
                     title="视频捕捉"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 sm:h-5 w-4 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
                       <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm12.553 1.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
                     </svg>
                   </button>
                   
                   {/* 捕捉选项弹出菜单 */}
                   {showCaptureOptions && !isCapturing && (
-                    <div className="absolute bottom-full mb-2 right-0 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[160px] z-50">
+                    <div className="absolute bottom-full mb-2 right-0 bg-white rounded-lg shadow-lg border border-gray-200 py-1 sm:py-2 min-w-[120px] sm:min-w-[160px] z-50">
                       <button
                         type="button"
                         onClick={() => handleCaptureOption('camera')}
-                        className="w-full px-4 py-2 text-left hover:bg-gray-50 text-sm"
+                        className="w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left hover:bg-gray-50 text-xs sm:text-sm"
                       >
                         摄像头捕捉
                       </button>
                       <button
                         type="button"
                         onClick={() => handleCaptureOption('screen')}
-                        className="w-full px-4 py-2 text-left hover:bg-gray-50 text-sm"
+                        className="w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left hover:bg-gray-50 text-xs sm:text-sm"
                       >
                         屏幕捕捉
                       </button>
@@ -731,17 +720,17 @@ const GeminiInterface: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="p-3 rounded-xl bg-gray-50 text-gray-700 border border-gray-200 hover:border-green-400 transition-all duration-200"
+                  className="p-2 sm:p-3 rounded-xl bg-gray-50 text-gray-700 border border-gray-200 hover:border-green-400 transition-all duration-200"
                   title="上传图片"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 sm:h-5 w-4 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
                   </svg>
                 </button>
                 <button
                   type="submit"
                   disabled={(!input.trim() && !selectedImage) || loading}
-                  className={`px-6 py-3 rounded-xl transition-all duration-200 ${
+                  className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl transition-all duration-200 ${
                     (!input.trim() && !selectedImage) || loading
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-green-500 text-white hover:bg-green-600'

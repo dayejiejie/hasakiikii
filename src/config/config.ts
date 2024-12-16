@@ -33,8 +33,8 @@ export type {
 };
 
 export const siteConfig: AppConfig = {
-  name: '您的站点名称',
-  favicon: '/favicon.ico',
+  name: 'Hasakiikii的主页',
+  favicon: '/ico.png',
   avatarConfig: {
     src: '/1.png',
     size: 130,

@@ -17,6 +17,7 @@ export interface Site {
   title: string;
   url?: string;
   desc?: string;
+  hoverBgKey?: string;
 }
 
 export interface FontItem {

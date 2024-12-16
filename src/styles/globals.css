@@ -2,6 +2,7 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+  --bg-image: url(/prev.png);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -14,12 +15,11 @@
 
 body {
   /* color: rgb(var(--foreground-rgb)); */
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: var(--bg-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background-image 0.7s ease-in-out;
 }
 
 .mio-hidden {

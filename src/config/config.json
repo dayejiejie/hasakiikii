@@ -1,6 +1,6 @@
 {
-  "name": "KASUIEの主页✨",
-  "favicon": "/favicon.ico",
+  "name": "Hasakiikii的主页",
+  "favicon": "/ico.png",
   "keywords": "remio,rem,mio,C.C.,KASUIEの次元,KASUIE的个人博客,KASUIE,个人主页,主页,个人记录,技术博客,个人生活",
   "description": "KASUIEの次元，兴趣至上，内容随缘，个人主页",
   "avatarConfig": {
@@ -13,16 +13,24 @@
     "aloneRight": false
   },
   "bgConfig": {
-    "bg": ["/prev.png"],
-    "mbg": ["/prev.png"],
+    "bg": "/prev.png",
+    "mbg": "/prev.png",
     "bgStyle": "snow",
     "blur": "",
     "cardOpacity": 0.1,
-    "carousel": true,
-    "carouselGap": 5,
+    "carousel": false,
     "transitionTime": 0.7,
     "transitionStyle": "default",
-    "autoAnimate": false
+    "autoAnimate": false,
+    "hoverBg": {
+      "enabled": true,
+      "backgrounds": {
+        "blog": "/bg1.jpg",
+        "psychology": "/bg2.png",
+        "ai": "/bg3.png",
+        "more": "/bg4.jpg"
+      }
+    }
   },
   "globalStyle": {
     "primaryColor": "#0dbf56",
@@ -74,25 +82,29 @@
       "icon": "/blog.jpg",
       "title": "个人博客 / Personal Blog",
       "url": "/blog",
-      "desc": "记录生活分享感悟"
+      "desc": "记录生活分享感悟",
+      "hoverBgKey": "blog"
     },
     {
       "icon": "/psy.png",
       "title": "心理学 / Psychology",
       "url": "/psychology",
-      "desc": "探索心灵的奥秘"
+      "desc": "探索心灵的奥秘",
+      "hoverBgKey": "psychology"
     },
     {
       "icon": "/ai.png",
       "title": "人工智能 / AI",
       "url": "/ai2",
-      "desc": "拥抱智能新时代"
+      "desc": "拥抱智能新时代",
+      "hoverBgKey": "ai"
     },
     {
       "icon": "/more.png",
       "title": "更多 / More",
       "url": "#",
-      "desc": "发现更多精彩内容"
+      "desc": "发现更多精彩内容",
+      "hoverBgKey": "more"
     }
   ],
   "sitesConfig": {

@@ -19,7 +19,7 @@ export function MainEffect({
   bgStyle,
   blur,
   audio,
-  carousel = true,
+  carousel = false,
   carouselGap = 6,
   transitionTime,
   transitionStyle = "default",
@@ -32,31 +32,11 @@ export function MainEffect({
   theme?: string;
   motions?: object;
 }) {
-  const videoExtensions = [
-    ".mp4",
-    ".webm",
-    ".ogg",
-    ".mov",
-    ".avi",
-    ".flv",
-    ".mkv",
-  ];
-
-  const [index, setIndex] = useState<number>(0);
-
-  const [mindex, setMindex] = useState<number>(0);
-
+  const [currentBg, setCurrentBg] = useState<string>(bgArr[0]);
   const [variant, setVariant] = useState<Object>({});
-
-  const videoRef = useRef<HTMLVideoElement>(null);
-
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
   const [aPlaying, setAPlaying] = useState(false);
-
   const [hasMedia, setHasMedia] = useState(false);
-
-  const [vPlaying, setVPlaying] = useState(false);
 
   useEffect(() => {
     if (isClientSide && bgStyle && document) {
@@ -77,58 +57,12 @@ export function MainEffect({
   }, [audio]);
 
   useEffect(() => {
-    if (bgArr && bgArr.length > 1 && carousel) {
-      const timer = setInterval(
-        () => {
-          setIndex((prevIndex) => (prevIndex + 1) % bgArr.length);
-        },
-        Math.max((carouselGap || 5) * 1000, 3000)
-      );
-      return () => clearInterval(timer);
-    }
-  }, [bgArr, carousel]);
-
-  useEffect(() => {
-    if (mbgArr && mbgArr.length > 1 && carousel) {
-      const timer = setInterval(
-        () => {
-          setMindex((prevMindex) => (prevMindex + 1) % mbgArr.length);
-        },
-        Math.max((carouselGap || 5) * 1000, 3000)
-      );
-      return () => clearInterval(timer);
-    }
-  }, [mbgArr, carousel]);
-
-  useEffect(() => {
     if (!autoAnimate) {
       transitionStyle
         ? setVariant(variants.default)
         : setVariant(variants[transitionStyle]);
     }
   }, [autoAnimate, transitionStyle]);
-
-  useEffect(() => {
-    if (mbgArr?.length) {
-      const index = mbgArr.findIndex((v: string) => isVideo(v));
-      if (index > -1) {
-        setHasMedia(true);
-      }
-    }
-    if (bgArr?.length) {
-      const index = bgArr.findIndex((v: string) => isVideo(v));
-      if (index > -1) {
-        setHasMedia(true);
-      }
-    }
-  }, [mbgArr, bgArr]);
-
-  const isVideo = (url: string) => {
-    const lowerCaseUrl = url?.toLowerCase();
-    return videoExtensions.some((extension) =>
-      lowerCaseUrl.endsWith(extension)
-    );
-  };
 
   // 切换播放/暂停状态
   const togglePlayPause = () => {
@@ -142,25 +76,6 @@ export function MainEffect({
     }
   };
 
-  const handlePlayPause = () => {
-    if (videoRef.current) {
-      if (videoRef.current.paused) {
-        videoRef.current.play();
-      } else {
-        videoRef.current.pause();
-      }
-    }
-  };
-
-  const handleMuteUnmute = (muted: boolean) => {
-    if (videoRef.current) {
-      if (videoRef.current.paused) {
-        videoRef.current.play();
-      }
-      videoRef.current.muted = muted;
-    }
-  };
-
   const className = clsx(
     "fixed brightness-50 dark:brightness-[.25] h-full w-full top-0 left-0 bg-cover bg-fixed bg-center bg-no-repeat",
     {
@@ -171,52 +86,8 @@ export function MainEffect({
     }
   );
 
-  const renderVideo = (
-    src: string,
-    className: string = "",
-    key: string | number
-  ) => {
-    return (
-      <>
-        <motion.video
-          key={`video-${key}-${src}`}
-          ref={videoRef}
-          className={clsx(`${className} object-cover`)}
-          preload="auto"
-          src={src}
-          loop
-          muted
-          autoPlay
-          {...variant}
-          transition={{
-            duration: transitionTime || 0.7,
-            ease: "easeInOut",
-          }}
-        ></motion.video>
-      </>
-    );
-  };
-
   const renderAudio = (url: string) => {
     return <audio ref={audioRef} src={url} />;
-  };
-
-  const renderIframe = (
-    src: string,
-    className: string = "",
-    key: number | string
-  ) => {
-    return (
-      <iframe
-        key={key}
-        src={`${src}&danmaku=0&autoplay=1&mute=0`}
-        className={clsx(`${className} object-cover`)}
-        scrolling="no"
-        frameBorder="no"
-        allowFullScreen
-        allow="autoplay; encrypted-media; gyroscope; web-share"
-      />
-    );
   };
 
   const renderBg = (url: string, isMbg: boolean, key: number) => {
@@ -227,47 +98,58 @@ export function MainEffect({
 
     if (!url) return null;
 
-    if (isVideo(url)) return renderVideo(url, classNames, `${isMbg ? 'mobile' : 'desktop'}-${key}`);
-
     return (
       <motion.div
         key={`${isMbg ? 'mobile' : 'desktop'}-${key}-${url}`}
-        className={clsx(classNames, {
-          "animate-[mio-bg-top_6s_linear_reverse_infinite]":
-            key % 4 == 0 && autoAnimate,
-          "animate-[mio-bg-bottom_6s_linear_reverse_infinite]":
-            key % 4 == 1 && autoAnimate,
-          "animate-[mio-bg-right_6s_linear_reverse_infinite]":
-            key % 4 == 2 && autoAnimate,
-          "animate-[mio-bg-left_6s_linear_reverse_infinite]":
-            key % 4 == 3 && autoAnimate,
-        })}
+        className={classNames}
         style={{
           backgroundImage: `url(${url})`,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          zIndex: -1
         }}
-        {...variant}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
         transition={{
-          duration: transitionTime || 0.7,
+          duration: 0.5,
           ease: "easeInOut",
         }}
       ></motion.div>
     );
   };
 
+  // 监听自定义事件来更新背景
+  useEffect(() => {
+    const handleBgChange = (e: CustomEvent) => {
+      setCurrentBg(e.detail.bg);
+    };
+
+    window.addEventListener('changeBg' as any, handleBgChange as any);
+
+    return () => {
+      window.removeEventListener('changeBg' as any, handleBgChange as any);
+    };
+  }, []);
+
   return (
     <section className="z-0">
       <AnimatePresence>
-        {bgArr && renderBg(bgArr[index], false, index)}
-        {mbgArr && renderBg(mbgArr[mindex], true, mindex)}
+        {renderBg(currentBg, false, 0)}
+        {mbgArr && renderBg(mbgArr[0], true, 0)}
         {audio && renderAudio(audio)}
-        {/* {bgArr && bgArr.map((v, i) => renderBg(v, false, i))}
-        {mbgArr && mbgArr.map((v, i) => renderBg(v, true, i))} */}
       </AnimatePresence>
       <Controller
         theme={theme}
         hasMedia={hasMedia}
         motions={motions}
-        handleMuteUnmute={audio ? togglePlayPause : handleMuteUnmute}
+        handleMuteUnmute={audio ? togglePlayPause : undefined}
       />
     </section>
   );

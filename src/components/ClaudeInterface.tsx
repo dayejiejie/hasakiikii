@@ -205,14 +205,14 @@ const ClaudeInterface: React.FC<Props> = ({
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div className="flex flex-col h-[100dvh] bg-white rounded-lg shadow-xl overflow-hidden">
       {/* 顶部导航栏 */}
-      <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-100">
-        <div className="flex items-center gap-4">
-          <div className="text-xl font-semibold text-gray-800">Claude</div>
+      <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-white border-b border-gray-100">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <div className="text-lg sm:text-xl font-semibold text-gray-800">Claude</div>
           <button
             onClick={() => setBilingual(!bilingual)}
-            className={`px-3 py-1 text-sm rounded-lg transition-all duration-200 ${
+            className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-lg transition-all duration-200 ${
               bilingual
                 ? 'bg-purple-500 text-white'
                 : 'bg-gray-50 text-gray-700 border border-gray-200 hover:border-purple-400'
@@ -221,12 +221,12 @@ const ClaudeInterface: React.FC<Props> = ({
             双语模式
           </button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           {navigationItems.map((item, index) => (
             <Link
               key={index}
               href={item.href}
-              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200"
+              className="p-1.5 sm:p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200"
             >
               {item.icon}
             </Link>
@@ -238,7 +238,7 @@ const ClaudeInterface: React.FC<Props> = ({
       <div className="flex-1 overflow-hidden">
         <div className="h-full flex flex-col">
           {/* 消息列表 */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 no-scrollbar">
             {messages.map((message, index) => (
               <div
                 key={index}
@@ -247,7 +247,7 @@ const ClaudeInterface: React.FC<Props> = ({
                 }`}
               >
                 <div
-                  className={`max-w-[80%] p-4 rounded-2xl shadow-sm ${
+                  className={`max-w-[85%] sm:max-w-[75%] p-3 sm:p-4 rounded-2xl shadow-sm ${
                     message.role === 'user'
                       ? 'bg-purple-500 text-white'
                       : 'bg-gray-50 text-gray-700 border border-gray-100'
@@ -258,38 +258,12 @@ const ClaudeInterface: React.FC<Props> = ({
                     translation={message.translation} 
                     role={message.role}
                   />
-                  {bilingual && message.role === 'assistant' && message.translation && (
-                    <div className="mt-2 pt-2 border-t border-gray-200 text-gray-500">
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm, remarkMath]}
-                        rehypePlugins={[rehypeRaw, rehypeKatex]}
-                        components={{
-                          code({node, inline, className, children, ...props}: CodeProps) {
-                            const match = /language-(\w+)/.exec(className || '');
-                            return !inline && match ? (
-                              <pre className="bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto">
-                                <code className={className} {...props}>
-                                  {children}
-                                </code>
-                              </pre>
-                            ) : (
-                              <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded" {...props}>
-                                {children}
-                              </code>
-                            );
-                          }
-                        }}
-                      >
-                        {message.translation}
-                      </ReactMarkdown>
-                    </div>
-                  )}
                 </div>
               </div>
             ))}
             {loading && (
               <div className="flex justify-start">
-                <div className="max-w-[80%] p-4 rounded-2xl bg-gray-50 text-gray-700 border border-gray-100 shadow-sm">
+                <div className="max-w-[85%] sm:max-w-[75%] p-3 sm:p-4 rounded-2xl bg-gray-50 text-gray-700 border border-gray-100 shadow-sm">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
                     <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
@@ -302,10 +276,10 @@ const ClaudeInterface: React.FC<Props> = ({
           </div>
 
           {/* 输入区域 */}
-          <div className="p-4 border-t border-gray-100 bg-white">
+          <div className="p-3 sm:p-4 border-t border-gray-100 bg-white">
             {imagePreview && (
-              <div className="mb-4 relative inline-block group">
-                <img src={imagePreview} alt="Selected" className="max-h-32 rounded-lg" />
+              <div className="mb-3 sm:mb-4 relative inline-block">
+                <img src={imagePreview} alt="Selected" className="max-h-24 sm:max-h-32 rounded-lg" />
                 <button
                   onClick={handleImageRemove}
                   className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
@@ -316,30 +290,29 @@ const ClaudeInterface: React.FC<Props> = ({
                 </button>
               </div>
             )}
-            <form onSubmit={handleSubmit} className="flex gap-3">
+            <form onSubmit={handleSubmit} className="flex gap-2">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onPaste={handlePaste}
-                className="flex-1 px-4 py-3 bg-gray-50 text-gray-700 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-gray-50 text-gray-700 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
                 placeholder={loading ? '正在处理...' : selectedImage ? '请描述这张图片...' : '输入您的问题...'}
                 disabled={loading}
               />
-              <div className="flex gap-2">
+              <div className="flex gap-1 sm:gap-2">
                 <input
                   type="file"
                   ref={fileInputRef}
                   onChange={handleImageSelect}
                   accept="image/*"
                   className="hidden"
-                  id="image-upload"
                 />
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={loading}
-                  className="p-3 rounded-xl transition-all duration-200 bg-gray-50 text-gray-700 border border-gray-200 hover:border-purple-400 group relative"
+                  className="p-2 sm:p-3 rounded-xl transition-all duration-200 bg-gray-50 text-gray-700 border border-gray-200 hover:border-purple-400"
                   title="上传图片"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -349,7 +322,7 @@ const ClaudeInterface: React.FC<Props> = ({
                 <button
                   type="submit"
                   disabled={(!input.trim() && !selectedImage) || loading}
-                  className={`px-6 py-3 rounded-xl transition-all duration-200 ${
+                  className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl transition-all duration-200 ${
                     (!input.trim() && !selectedImage) || loading
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-purple-500 text-white hover:bg-purple-600'

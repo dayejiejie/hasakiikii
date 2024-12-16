@@ -15,18 +15,28 @@ import "@/styles/index.css";
 import 'katex/dist/katex.min.css';
 import StyleRegistry from "@/components/layout/StyleRegistry";
 
+export const metadata = {
+  title: 'Hasakiikii的主页',
+  description: 'Your personal AI assistant',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: 'no',
+    viewportFit: 'cover'
+  },
+  themeColor: '#ffffff'
+};
+
 export async function generateMetadata() {
   const appConfig = await getConfig("config.json");
 
   return {
-    title: appConfig.name,
+    title: 'Hasakiikii的主页',
     description: appConfig.description,
     keywords: appConfig.keywords,
-    manifest: "/api/manifest",
     icons: {
-      icon: appConfig.favicon || "/favicon.ico",
-      shortcut: "/icons/favicon192.png",
-      apple: "/icons/favicon192.png",
+      icon: '/ico.png',
     },
     other: { "baidu-site-verification": process.env.BaiduSiteVerify || "" },
   } satisfies Metadata;
@@ -40,6 +50,9 @@ export default async function RootLayout({
   const appConfig = await getConfig("config.json");
   return (
     <html lang="zh-CN" suppressHydrationWarning>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+      </head>
       <body className={`mio-scroll mio-fonts overflow-y-auto`}>
         <AppProviders appConfig={appConfig} ver={process.env.VERSION || ""}>
           <Layout>{children}</Layout>

@@ -15,7 +15,7 @@ import { clsx } from "@kasuie/utils";
 import { Site, SitesConfig } from "@/config/config";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
-import { CSSProperties } from "react";
+import { CSSProperties, useState, useEffect } from "react";
 import { message } from "@/components/ui/message/message";
 
 const FlipCard = dynamic(
@@ -46,6 +46,32 @@ export function Links({
   warpClass,
 }: LinksProps) {
   const { isVisible, openModal, closeModal } = useModal();
+  const [currentBg, setCurrentBg] = useState<string>("/prev.png");
+
+  const handleMouseEnter = (hoverBgKey: string) => {
+    if (!hoverBgKey) return;
+    
+    const bgMap: { [key: string]: string } = {
+      "blog": "/bg1.jpg",
+      "psychology": "/bg2.png",
+      "ai": "/bg3.png",
+      "more": "/bg4.jpg"
+    };
+
+    // 发送自定义事件来更新背景
+    const event = new CustomEvent('changeBg', { 
+      detail: { bg: bgMap[hoverBgKey] || "/prev.png" }
+    });
+    window.dispatchEvent(event);
+  };
+
+  const handleMouseLeave = () => {
+    // 发送自定义事件来恢复默认背景
+    const event = new CustomEvent('changeBg', { 
+      detail: { bg: "/prev.png" }
+    });
+    window.dispatchEvent(event);
+  };
 
   const handleClick = (url?: string) => {
     if (url === "#") {
@@ -77,9 +103,9 @@ export function Links({
     }
 
     const className = clsx(
-      "group/main relative shadow-mio-link z-[1] flex h-[90px] flex-row flex-nowrap items-center gap-[10px] overflow-hidden rounded-2xl bg-black/10 p-[10px_15px] duration-500 hover:z-10 hover:border-transparent hover:!blur-none",
+      "group/main relative shadow-mio-link z-[1] flex h-[100px] sm:h-[90px] flex-row flex-nowrap items-center gap-[8px] sm:gap-[10px] overflow-hidden rounded-2xl bg-black/10 p-[12px_15px] sm:p-[10px_15px] duration-500 hover:z-10 hover:border-transparent hover:!blur-none",
       {
-        "hover:!scale-110 backdrop-blur-[7px]": outer,
+        "hover:!scale-102 sm:hover:!scale-110 backdrop-blur-[7px]": outer,
         "group-hover/links:scale-90": sitesConfig.hoverScale,
         "group-hover/links:blur-[1px]": sitesConfig.hoverBlur,
       }
@@ -88,29 +114,30 @@ export function Links({
     return (
       <div style={style} className={className}>
         {item.icon && (
-          <div className="p-[5px]">
+          <div className="flex-shrink-0 p-[5px]">
             <Image
               alt={item.title}
               src={item.icon}
               width={42}
               height={42}
+              className="w-[42px] h-[42px] rounded-full"
               style={{
                 borderRadius: "50%",
               }}
             ></Image>
           </div>
         )}
-        <div className="p-[5px]">
-          {item.title && <p className="text-white">{item.title}</p>}
+        <div className="flex-1 min-w-0 p-[5px]">
+          {item.title && <p className="text-white text-base sm:text-base font-medium truncate">{item.title}</p>}
           {item.desc && (
-            <p className="pt-[10px] text-[15px] text-white/70">{item.desc}</p>
+            <p className="pt-[4px] text-sm text-white/70 truncate leading-tight">{item.desc}</p>
           )}
         </div>
-        <span className="absolute bottom-[5px] right-[7px] text-white/70">
+        <span className="flex-shrink-0 text-white/70 ml-2">
           {item?.url ? (
-            <ExternalLink size={14} />
+            <ExternalLink size={16} className="w-4 h-4" />
           ) : (
-            <DotsHorizontal size={14} />
+            <DotsHorizontal size={16} className="w-4 h-4" />
           )}
         </span>
       </div>
@@ -123,24 +150,26 @@ export function Links({
         key={key}
         title={item.title}
         className={clsx(
-          "flex cursor-pointer flex-col justify-center",
+          "flex cursor-pointer flex-col justify-center w-full",
           {
-            "w-[calc(25%-12px)]": outer,
+            "sm:w-[calc(25%-12px)]": outer,
             "basis-full": !outer,
           }
         )}
+        onMouseEnter={() => handleMouseEnter(item.hoverBgKey || "")}
+        onMouseLeave={handleMouseLeave}
       >
         {item?.url ? (
           <div 
             onClick={() => handleClick(item.url)} 
-            className="h-full w-full"
+            className="block w-full"
           >
             {item.url.startsWith('http') || item.url === '#' ? (
-              <div className="h-full w-full">
+              <div className="block w-full">
                 {itemContent(item, outer)}
               </div>
             ) : (
-              <Link href={item.url} className="h-full w-full">
+              <Link href={item.url} className="block w-full">
                 {itemContent(item, outer)}
               </Link>
             )}
@@ -148,7 +177,7 @@ export function Links({
         ) : (
           <div
             onClick={() => handleClick()}
-            className="h-full w-full"
+            className="block w-full"
           >
             {itemContent(item)}
           </div>
@@ -157,11 +186,17 @@ export function Links({
     );
   };
 
+  useEffect(() => {
+    // 添加CSS变量到根元素
+    const root = document.documentElement;
+    root.style.setProperty('--bg-image', 'url(/prev.png)');
+  }, []);
+
   return (
     <motion.div
       {...motions}
       className={clsx(
-        "group/links z-[1] mt-3 flex w-full flex-row flex-nowrap justify-between gap-4 md:mt-8",
+        "group/links z-[1] mt-3 flex flex-col sm:flex-row sm:flex-wrap sm:justify-between w-full gap-3 sm:gap-4 md:mt-8",
         warpClass
       )}
     >
