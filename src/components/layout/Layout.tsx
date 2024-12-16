@@ -34,7 +34,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       />
       {isHomePage && <DanmakuEffect />}
       <div className="relative z-10">
-        <div className="w-full px-4">
+        <div className="w-full">
           <div className="flex min-h-screen flex-col">
             {/* 主要内容区域 */}
             <main className="flex-1">

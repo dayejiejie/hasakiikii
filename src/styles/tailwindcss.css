@@ -24,6 +24,22 @@
       @apply w-1 bg-[#64d1e2];
     }
   }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease-out forwards;
+  }
+
   .mio-tooltip {
     @apply pointer-events-none absolute bottom-[-20px] min-w-20 rounded-[5px] bg-black/30 px-2 py-2 text-sm leading-none text-white opacity-0 shadow-[0_10px_10px_#0000001a] transition-all duration-300 ease-mio-tooltip before:absolute before:left-[calc(50%-6px)] before:top-[-6px] before:h-0 before:w-0 before:border-x-[6px] before:border-b-[6px] before:border-x-transparent before:border-b-black/30 before:transition-all before:duration-300 before:ease-mio-tooltip before:content-[''];
   }

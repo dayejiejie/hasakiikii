@@ -17,6 +17,7 @@ import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { CSSProperties, useState, useEffect } from "react";
 import { message } from "@/components/ui/message/message";
+import { createPortal } from "react-dom";
 
 const FlipCard = dynamic(
   async () => (await import("../cards/FlipCard")).FlipCard
@@ -31,6 +32,53 @@ interface LinksProps {
   motions?: object;
   warpClass?: string;
 }
+
+// 添加InfoTip组件
+const InfoTip = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleClick = () => {
+    setIsVisible(true);
+    setTimeout(() => {
+      setIsVisible(false);
+    }, 3000);
+  };
+
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed bottom-4 right-4 z-[999999] flex flex-col items-end gap-3">
+      {isVisible && (
+        <div className="bg-black/80 text-white px-4 py-2 rounded-lg text-sm animate-fade-in">
+          如果遇到BUG，请发送电子邮件到2465335064@qq.com反馈，谢谢
+        </div>
+      )}
+      <button
+        onClick={handleClick}
+        className="bg-black/30 hover:bg-black/50 text-white p-2 rounded-full backdrop-blur-sm transition-colors duration-200"
+      >
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          className="h-5 w-5" 
+          viewBox="0 0 20 20" 
+          fill="currentColor"
+        >
+          <path 
+            fillRule="evenodd" 
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" 
+            clipRule="evenodd" 
+          />
+        </svg>
+      </button>
+    </div>,
+    document.body
+  );
+};
 
 export function Links({
   staticSites,
@@ -75,7 +123,7 @@ export function Links({
 
   const handleClick = (url?: string) => {
     if (url === "#") {
-      message.info("更多功能正在开发中，敬请期待！");
+      message.info("更多功能正在开发中，敬请期待！", 2000);
       return;
     }
     if (!url && sitesConfig?.modal) {
@@ -193,31 +241,34 @@ export function Links({
   }, []);
 
   return (
-    <motion.div
-      {...motions}
-      className={clsx(
-        "group/links z-[100] mt-3 flex flex-col sm:flex-row sm:flex-wrap sm:justify-between w-full gap-3 sm:gap-4 md:mt-8",
-        warpClass
-      )}
-    >
-      {staticSites.map((v, index) => linkItem(v, index))}
-      {sitesConfig?.modal && modalSites?.length ? (
-        <Modal
-          className="w-[650px]"
-          visible={isVisible}
-          title={sitesConfig?.modalTitle}
-          closeModal={closeModal}
-        >
-          {sitesConfig?.modalTips && (
-            <div className="relative pb-2 indent-5 text-sm text-white/90 before:absolute before:left-[7px] before:top-2 before:h-1 before:w-1 before:rounded-full before:bg-[#229fff] before:content-[''] after:absolute after:left-[5px] after:top-[6px] after:h-2 after:w-2 after:rounded-full after:border after:border-[#229fff]">
-              {sitesConfig.modalTips}
+    <>
+      <InfoTip />
+      <motion.div
+        {...motions}
+        className={clsx(
+          "group/links z-[100] mt-3 flex flex-col sm:flex-row sm:flex-wrap sm:justify-between w-full gap-3 sm:gap-4 md:mt-8",
+          warpClass
+        )}
+      >
+        {staticSites.map((v, index) => linkItem(v, index))}
+        {sitesConfig?.modal && modalSites?.length ? (
+          <Modal
+            className="w-[650px]"
+            visible={isVisible}
+            title={sitesConfig?.modalTitle}
+            closeModal={closeModal}
+          >
+            {sitesConfig?.modalTips && (
+              <div className="relative pb-2 indent-5 text-sm text-white/90 before:absolute before:left-[7px] before:top-2 before:h-1 before:w-1 before:rounded-full before:bg-[#229fff] before:content-[''] after:absolute after:left-[5px] after:top-[6px] after:h-2 after:w-2 after:rounded-full after:border after:border-[#229fff]">
+                {sitesConfig.modalTips}
+              </div>
+            )}
+            <div className="flex flex-wrap justify-between gap-y-6">
+              {modalSites.map((v, index) => linkItem(v, index, false))}
             </div>
-          )}
-          <div className="flex flex-wrap justify-between gap-y-6">
-            {modalSites.map((v, index) => linkItem(v, index, false))}
-          </div>
-        </Modal>
-      ) : null}
-    </motion.div>
+          </Modal>
+        ) : null}
+      </motion.div>
+    </>
   );
 }
