@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 // 获取所有弹幕
 export async function GET() {
@@ -10,11 +11,19 @@ export async function GET() {
       },
       take: 50 // 限制返回最新的50条
     });
-    console.log('Fetched danmakus:', danmakus); // 调试日志
     return NextResponse.json(danmakus);
   } catch (error) {
     console.error('Failed to fetch danmakus:', error);
-    return NextResponse.json({ error: 'Failed to fetch danmakus' }, { status: 500 });
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      return NextResponse.json(
+        { error: `Database error: ${error.message}` },
+        { status: 500 }
+      );
+    }
+    return NextResponse.json(
+      { error: 'An unexpected error occurred' },
+      { status: 500 }
+    );
   }
 }
 
@@ -22,8 +31,6 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    console.log('Received body:', body); // 调试日志
-
     const danmaku = await prisma.danmaku.create({
       data: {
         text: body.text,
@@ -32,12 +39,19 @@ export async function POST(request: Request) {
         top: body.top,
       }
     });
-
-    console.log('Created danmaku:', danmaku); // 调试日志
     return NextResponse.json(danmaku);
   } catch (error) {
     console.error('Failed to create danmaku:', error);
-    return NextResponse.json({ error: 'Failed to create danmaku' }, { status: 500 });
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      return NextResponse.json(
+        { error: `Database error: ${error.message}` },
+        { status: 500 }
+      );
+    }
+    return NextResponse.json(
+      { error: 'An unexpected error occurred' },
+      { status: 500 }
+    );
   }
 }
 
@@ -45,11 +59,19 @@ export async function POST(request: Request) {
 export async function DELETE() {
   try {
     await prisma.danmaku.deleteMany({});
-    console.log('Deleted all danmakus'); // 调试日志
     return NextResponse.json({ message: 'All danmakus deleted successfully' });
   } catch (error) {
     console.error('Failed to delete danmakus:', error);
-    return NextResponse.json({ error: 'Failed to delete danmakus' }, { status: 500 });
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      return NextResponse.json(
+        { error: `Database error: ${error.message}` },
+        { status: 500 }
+      );
+    }
+    return NextResponse.json(
+      { error: 'An unexpected error occurred' },
+      { status: 500 }
+    );
   }
 }
 
