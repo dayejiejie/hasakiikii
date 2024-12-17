@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     const id = searchParams.get('id');
 
     if (id) {
-      console.log('获取单篇文章:', id); // 调试日志
+      console.log('获取单篇文章:', id);
       
       const post = await prisma.blogPost.findUnique({
         where: { id },
@@ -32,21 +32,25 @@ export async function GET(request: Request) {
       });
 
       if (!post) {
-        console.log('文章不存在:', id); // 调试日志
+        console.log('文章不存在:', id);
         return NextResponse.json(
-          { error: '文章不存在', posts: [] },
+          { error: '文章不存在' },
           { status: 404 }
         );
       }
 
-      console.log('文章数据:', {
+      // 检查文章内容中的媒体引用
+      const mediaUrls = post.media.map(m => m.url);
+      console.log('文章媒体数据:', {
         id: post.id,
         title: post.title,
-        hasContent: !!post.content,
-        mediaCount: post.media.length
-      }); // 调试日志
+        mediaCount: post.media.length,
+        mediaUrls: mediaUrls,
+        contentLength: post.content.length,
+        hasMediaInContent: mediaUrls.some(url => post.content.includes(url))
+      });
 
-      return NextResponse.json({ post, posts: [post] });
+      return NextResponse.json({ post });
     }
 
     const posts = await prisma.blogPost.findMany({

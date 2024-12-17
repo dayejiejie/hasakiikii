@@ -21,7 +21,7 @@ export async function POST(req: Request) {
 
     let prompt = message;
     if (bilingual) {
-      prompt += '\n请保持原始格式回复，如果有代码块，保持代码的格式，如果有数学公式，保持数学公式的格式。然后在回答后加上"---"，再给出英文翻译。';
+      prompt = `${message}\n\n请同时用中文和英文回答问题。先用中文回答，然后用"===="分隔符，再用英文回答。请确保两种语言的回答内容完全一致，包括格式、代码块和数学公式。`;
     }
 
     let content: ChatCompletionContentPart[] = [
@@ -52,6 +52,29 @@ export async function POST(req: Request) {
     });
 
     const reply = response.choices[0].message.content || '抱歉，我现在无法回答这个问题。';
+
+    if (bilingual && !reply.includes('====')) {
+      const translationResponse = await client.chat.completions.create({
+        model: 'claude-3-5-sonnet-latest',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a professional translator. Please translate the following Chinese text to English, maintaining the same format, structure, and any special elements like code blocks or mathematical formulas.'
+          },
+          {
+            role: 'user',
+            content: reply
+          }
+        ],
+        max_tokens: 4000,
+        temperature: 0.3
+      });
+
+      const translation = translationResponse.choices[0].message.content;
+      const bilingualReply = `${reply}\n====\n${translation}`;
+      
+      return NextResponse.json({ reply: bilingualReply });
+    }
 
     return NextResponse.json({ reply });
   } catch (error) {

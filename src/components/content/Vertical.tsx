@@ -60,11 +60,11 @@ export function Vertical({
   return (
     <div
       className={clsx(
-        "relative z-[1] flex w-full flex-col items-center justify-center pb-16",
+        "relative z-[1] flex w-full flex-col items-center justify-center pb-12",
         {
-          "gap-8 pt-[20vh]": gapSize == "sm",
-          "gap-10 pt-[18vh]": gapSize == "md",
-          "gap-12 pt-[15vh]": gapSize == "lg",
+          "gap-6 pt-[10vh]": gapSize == "sm",
+          "gap-8 pt-[8vh]": gapSize == "md",
+          "gap-10 pt-[6vh]": gapSize == "lg",
           [`${className}`]: className,
         }
       )}
@@ -80,6 +80,7 @@ export function Vertical({
           animateStyle={avatarConfig?.style}
           {...avatarConfig}
           style={""}
+          className="w-20 h-20 md:w-28 md:h-28"
         />
       )}
       <TextEffect
@@ -100,6 +101,7 @@ export function Vertical({
           staticSites={staticSites}
           modalSites={modalSites}
           cardOpacity={cardOpacity}
+          warpClass="max-w-5xl mx-auto w-full px-4"
         />
       )}
       {!sliders?.hidden && (
@@ -107,6 +109,7 @@ export function Vertical({
           motions={getMotion(0.1, 4, 0.2, istTransition)}
           cardOpacity={cardOpacity}
           {...sliders}
+          warpClass="max-w-5xl mx-auto w-full px-4"
         />
       )}
     </div>

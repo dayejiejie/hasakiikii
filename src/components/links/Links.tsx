@@ -151,7 +151,7 @@ export function Links({
     }
 
     const className = clsx(
-      "group/main relative shadow-mio-link z-[1] flex h-[100px] sm:h-[90px] flex-row flex-nowrap items-center gap-[8px] sm:gap-[10px] overflow-hidden rounded-2xl bg-black/10 p-[12px_15px] sm:p-[10px_15px] duration-500 hover:z-10 hover:border-transparent hover:!blur-none",
+      "group/main relative shadow-mio-link z-[1] flex h-[80px] sm:h-[100px] flex-row flex-nowrap items-center gap-[8px] sm:gap-[10px] overflow-hidden rounded-2xl bg-black/10 p-[10px_12px] sm:p-[12px_15px] duration-500 hover:z-10 hover:border-transparent hover:!blur-none",
       {
         "hover:!scale-102 sm:hover:!scale-110 backdrop-blur-[7px]": outer,
         "group-hover/links:scale-90": sitesConfig.hoverScale,
@@ -166,9 +166,9 @@ export function Links({
             <Image
               alt={item.title}
               src={item.icon}
-              width={42}
-              height={42}
-              className="w-[42px] h-[42px] rounded-full"
+              width={36}
+              height={36}
+              className="w-[36px] h-[36px] sm:w-[42px] sm:h-[42px] rounded-full"
               style={{
                 borderRadius: "50%",
               }}
@@ -176,16 +176,16 @@ export function Links({
           </div>
         )}
         <div className="flex-1 min-w-0 p-[5px]">
-          {item.title && <p className="text-white text-base sm:text-base font-medium truncate">{item.title}</p>}
+          {item.title && <p className="text-white text-sm sm:text-base font-medium truncate">{item.title}</p>}
           {item.desc && (
-            <p className="pt-[4px] text-sm text-white/70 truncate leading-tight">{item.desc}</p>
+            <p className="pt-[2px] sm:pt-[4px] text-xs sm:text-sm text-white/70 truncate leading-tight">{item.desc}</p>
           )}
         </div>
         <span className="flex-shrink-0 text-white/70 ml-2">
           {item?.url ? (
-            <ExternalLink size={16} className="w-4 h-4" />
+            <ExternalLink size={14} className="w-3 h-3 sm:w-4 sm:h-4" />
           ) : (
-            <DotsHorizontal size={16} className="w-4 h-4" />
+            <DotsHorizontal size={14} className="w-3 h-3 sm:w-4 sm:h-4" />
           )}
         </span>
       </div>

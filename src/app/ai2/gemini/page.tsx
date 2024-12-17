@@ -17,9 +17,20 @@ export default function Page() {
     try {
       setLoading(true);
       
+      // 如果有图片，先处理图片
+      let messageToSend = message;
+      if (image) {
+        const reader = new FileReader();
+        const imageData = await new Promise<string>((resolve) => {
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(image);
+        });
+        messageToSend = `${message}\n![image](${imageData})`;
+      }
+      
       const newMessages = [
         ...messages,
-        { role: 'user' as const, content: message }
+        { role: 'user' as const, content: messageToSend }
       ];
       setMessages(newMessages);
 
@@ -94,9 +105,9 @@ export default function Page() {
   ];
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto px-2 py-2 h-screen">
-        <div className="h-full bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="h-full bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden relative">
           <GeminiInterface
             aiName="Gemini"
             messages={messages}

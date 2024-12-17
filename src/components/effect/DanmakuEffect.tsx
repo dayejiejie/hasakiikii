@@ -260,7 +260,7 @@ export function DanmakuEffect() {
         {isDanmakuEnabled ? '关闭弹幕' : '开启弹幕'}
       </button>
       
-      <div className="fixed bottom-[10%] left-0 right-0" style={{ zIndex: 101 }}>
+      <div className="fixed sm:bottom-[10%] bottom-[2%] left-0 right-0" style={{ zIndex: 101 }}>
         <form 
           onSubmit={handleSubmit}
           className="max-w-sm mx-auto px-4"
@@ -300,13 +300,13 @@ export function DanmakuEffect() {
       {/* 提示框 - 修改位置和样式 */}
       {showTip && (
         <div 
-          className="fixed bottom-4 right-4 bg-black/70 text-white px-4 py-2 rounded-lg backdrop-blur-sm z-[102] text-sm whitespace-nowrap"
+          className="fixed sm:bottom-4 bottom-0 right-4 bg-black/70 text-white px-4 py-2 rounded-lg backdrop-blur-sm z-[102] text-sm whitespace-nowrap"
         >
           如果遇到BUG，请发送电子邮件到2465335064@qq.com反馈，谢谢
         </div>
       )}
       
-      <div className="fixed bottom-4 right-4" style={{ zIndex: 101 }}>
+      <div className="fixed sm:bottom-4 bottom-0 right-4" style={{ zIndex: 101 }}>
         <button
           type="button"
           onClick={() => setShowTip(true)}

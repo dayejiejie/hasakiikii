@@ -15,7 +15,7 @@ export async function POST(request: Request) {
 
     // 如果启用双语模式，修改提示词
     let prompt = bilingual 
-      ? '请用中文和英文回答以下问题，用"---"分隔中英文回答。'
+      ? '你是一个专业的双语助手。请同时用中文和英文回答问题。先用中文回答，然后用"===="分隔符，再用英文回答。请确保两种语言的回答内容完全一致，包括格式、代码块和数学公式。'
       : '请用中文回答以下问题。';
 
     // 发送请求到 OpenAI 兼容的 API
@@ -35,13 +35,32 @@ export async function POST(request: Request) {
       throw new Error('API 返回的响应中没有内容');
     }
 
-    // 如果是双语模式，分割回复
-    if (bilingual) {
-      const [chinese, english] = reply.split('---').map(text => text.trim());
-      return NextResponse.json({ 
-        reply: chinese,
-        translation: english
+    // 如果是双语模式但回复中没有分隔符，请求翻译
+    if (bilingual && !reply.includes('====')) {
+      const translationResponse = await openai.chat.completions.create({
+        model: 'gemini-2.0-flash-exp',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a professional translator. Please translate the following Chinese text to English, maintaining the same format, structure, and any special elements like code blocks or mathematical formulas.'
+          },
+          {
+            role: 'user',
+            content: reply
+          }
+        ],
+        max_tokens: 2048,
+        temperature: 0.3,
+        stream: false
       });
+
+      const translation = translationResponse.choices[0]?.message?.content;
+      if (!translation) {
+        throw new Error('翻译 API 返回的响应中没有内容');
+      }
+
+      const bilingualReply = `${reply}\n====\n${translation}`;
+      return NextResponse.json({ reply: bilingualReply });
     }
 
     return NextResponse.json({ reply });

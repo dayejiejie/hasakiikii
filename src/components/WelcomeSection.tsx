@@ -54,7 +54,7 @@ const WelcomeSection = () => {
           </div>
 
           {/* AI 选择按钮 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl px-4">
             {[
               { name: 'ChatGPT', path: '/ai2/chatgpt', color: 'from-green-500 to-green-600' },
               { name: 'Claude', path: '/ai2/claude', color: 'from-purple-500 to-purple-600' },
@@ -63,9 +63,9 @@ const WelcomeSection = () => {
               <Link 
                 key={ai.name} 
                 href={ai.path}
-                className={`group relative px-6 py-3 rounded-xl bg-gradient-to-r ${ai.color} 
+                className={`group relative px-4 py-2 rounded-xl bg-gradient-to-r ${ai.color} 
                   text-white shadow-lg transition-all duration-300 hover:scale-105 
-                  hover:shadow-xl text-center`}
+                  hover:shadow-xl text-center text-sm sm:text-base sm:px-6 sm:py-3`}
               >
                 <div className="relative font-semibold">
                   {ai.name}

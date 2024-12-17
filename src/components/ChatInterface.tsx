@@ -448,13 +448,11 @@ const ChatInterface: React.FC<Props> = ({
                           </code>
                         );
                       },
-                      a({node, children, href, ...props}) {
-                        return (
-                          <Link href={href || ''} className="text-blue-500 hover:underline" {...props}>
-                            {children}
-                          </Link>
-                        );
-                      }
+                      a: ({ href, children }) => (
+                        <Link href={href || '#'} className="text-blue-500 hover:underline">
+                          {children}
+                        </Link>
+                      )
                     }}
                   >
                     {item.text}
@@ -494,13 +492,11 @@ const ChatInterface: React.FC<Props> = ({
                       </code>
                     );
                   },
-                  a({node, children, href, ...props}) {
-                    return (
-                      <Link href={href || ''} className="text-blue-500 hover:underline" {...props}>
-                        {children}
-                      </Link>
-                    );
-                  }
+                  a: ({ href, children }) => (
+                    <Link href={href || '#'} className="text-blue-500 hover:underline">
+                      {children}
+                    </Link>
+                  )
                 }}
               >
                 {translation}
@@ -533,13 +529,11 @@ const ChatInterface: React.FC<Props> = ({
                   </code>
                 );
               },
-              a({node, children, href, ...props}) {
-                return (
-                  <Link href={href || ''} className="text-blue-500 hover:underline" {...props}>
-                    {children}
-                  </Link>
-                );
-              }
+              a: ({ href, children }) => (
+                <Link href={href || '#'} className="text-blue-500 hover:underline">
+                  {children}
+                </Link>
+              )
             }}
           >
             {content}
@@ -565,13 +559,11 @@ const ChatInterface: React.FC<Props> = ({
                     </code>
                   );
                 },
-                a({node, children, href, ...props}) {
-                  return (
-                    <Link href={href || ''} className="text-blue-500 hover:underline" {...props}>
-                      {children}
-                    </Link>
-                  );
-                }
+                a: ({ href, children }) => (
+                  <Link href={href || '#'} className="text-blue-500 hover:underline">
+                    {children}
+                  </Link>
+                )
               }}
             >
               {translation}
@@ -843,14 +835,14 @@ const ChatInterface: React.FC<Props> = ({
   return (
     <div className="flex flex-col h-screen bg-white rounded-2xl shadow-xl overflow-hidden">
       {/* 顶部导航栏 */}
-      <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-100">
-        <div className="flex items-center gap-4">
-          <div className="text-xl font-semibold text-gray-800">{aiName}</div>
+      <div className="flex items-center justify-between px-3 sm:px-6 py-2 sm:py-4 bg-white border-b border-gray-100">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <div className="text-base sm:text-xl font-semibold text-gray-800">{aiName}</div>
           {!hideModelSelect && (
             <select
               value={model}
               onChange={(e) => setModel(e.target.value as ModelType)}
-              className="px-3 py-1 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-400 transition-all duration-200"
+              className="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-400 transition-all duration-200"
             >
               <option value="gpt-4o-all">GPT-4O</option>
               <option value="o1-pro-all">O1-Pro</option>
@@ -861,20 +853,20 @@ const ChatInterface: React.FC<Props> = ({
           )}
           <button
             onClick={() => setBilingual(!bilingual)}
-            className={`px-3 py-1 text-sm rounded-lg transition-all duration-200 ${
+            className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-lg transition-all duration-200 ${
               bilingual
                 ? 'bg-blue-500 text-white'
                 : 'bg-gray-50 text-gray-700 border border-gray-200 hover:border-blue-400'
             }`}
           >
-            双语模式
+            双语
           </button>
           
           {/* 添加图片生成选项 */}
           <select
             value={imageSize}
             onChange={(e) => setImageSize(e.target.value as ImageSize)}
-            className="px-3 py-1 text-sm rounded-lg border border-gray-200 bg-white"
+            className="hidden sm:block px-3 py-1 text-sm rounded-lg border border-gray-200 bg-white"
           >
             <option value="1024x1024">1024x1024</option>
             <option value="1024x1792">1024x1792</option>
@@ -884,18 +876,18 @@ const ChatInterface: React.FC<Props> = ({
           <select
             value={imageQuality}
             onChange={(e) => setImageQuality(e.target.value as ImageQuality)}
-            className="px-3 py-1 text-sm rounded-lg border border-gray-200 bg-white"
+            className="hidden sm:block px-3 py-1 text-sm rounded-lg border border-gray-200 bg-white"
           >
             <option value="standard">标准质量</option>
             <option value="hd">高清质量</option>
           </select>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           {navigationItems.map((item, index) => (
             <Link
               key={index}
               href={item.href}
-              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200"
+              className="p-1.5 sm:p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200"
             >
               {item.icon}
             </Link>
@@ -945,132 +937,127 @@ const ChatInterface: React.FC<Props> = ({
           </div>
 
           {/* 输入区域 */}
-          <div className="p-4 border-t border-gray-100 bg-white">
+          <div className="p-2 sm:p-4 border-t border-gray-100 bg-white">
             {speechError && (
-              <div className="mb-4 px-4 py-2 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+              <div className="mb-2 px-3 py-1 bg-red-50 text-red-600 text-xs rounded-lg">
                 {speechError}
               </div>
             )}
             {imagePreview && (
-              <div className="mb-4 relative inline-block group">
-                <img src={imagePreview} alt="Selected" className="max-h-32 rounded-lg" />
+              <div className="mb-2 relative inline-block">
+                <img src={imagePreview} alt="Selected" className="max-h-20 rounded-lg" />
                 <button
                   onClick={handleImageRemove}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
-                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs py-1 px-2 rounded-b-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                  支持剪贴板粘贴图片
-                </div>
               </div>
             )}
-            <form onSubmit={handleSubmit} className="flex gap-3">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                className="flex-1 px-4 py-3 bg-gray-50 text-gray-700 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                placeholder={isRealtimeMode ? '实时对话模式...' : isListening ? '正在听您说...' : selectedImage ? '请描述这张图片...' : '输入您的问题...'}
-                disabled={loading || isRealtimeMode}
-              />
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={handleGenerateImage}
-                  disabled={isGeneratingImage || !input.trim()}
-                  className={`p-3 rounded-xl transition-all duration-200 ${
-                    isGeneratingImage || !input.trim()
-                      ? 'text-gray-400 bg-gray-100'
-                      : 'bg-gray-50 text-gray-700 border border-gray-200 hover:border-blue-400'
-                  }`}
-                  title="生成图片"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleImageSelect}
-                  accept="image/*"
-                  className="hidden"
-                  id="image-upload"
-                />
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={loading}
-                  className="p-3 rounded-xl transition-all duration-200 bg-gray-50 text-gray-700 border border-gray-200 hover:border-blue-400 group relative"
-                  title="上传图片"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                  </svg>
-                  <span className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                    点击上传或粘贴图片
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (isRealtimeMode) {
-                      stopRealtimeChat();
-                    } else {
-                      startRealtimeChat();
-                    }
-                  }}
-                  disabled={loading}
-                  className={`p-3 rounded-xl transition-all duration-200 ${
-                    isRealtimeMode
-                      ? 'bg-red-500 text-white'
-                      : 'bg-gray-50 text-gray-700 border border-gray-200 hover:border-blue-400'
-                  }`}
-                  title={isRealtimeMode ? '结束实时对话' : '开始实时对话'}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                  </svg>
-                </button>
-                {speechSupported && (
+            <form onSubmit={handleSubmit}>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-50 text-gray-700 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                    placeholder={isRealtimeMode ? '实时对话模式...' : isListening ? '正在听您说...' : selectedImage ? '请描述这张图片...' : '输入您的问题...'}
+                    disabled={loading || isRealtimeMode}
+                  />
+                </div>
+                <div className="flex flex-row justify-between sm:justify-end items-center gap-1">
+                  <div className="flex items-center gap-1 order-1 sm:order-none">
+                    <button
+                      type="button"
+                      onClick={handleGenerateImage}
+                      disabled={isGeneratingImage || !input.trim()}
+                      className={`p-1.5 sm:p-2 rounded-lg ${
+                        isGeneratingImage || !input.trim()
+                          ? 'text-gray-400 bg-gray-100'
+                          : 'bg-gray-50 text-gray-700 border border-gray-200'
+                      }`}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleImageSelect}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={loading}
+                      className="p-1.5 sm:p-2 rounded-lg bg-gray-50 text-gray-700 border border-gray-200"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isRealtimeMode) {
+                          stopRealtimeChat();
+                        } else {
+                          startRealtimeChat();
+                        }
+                      }}
+                      disabled={loading}
+                      className={`p-1.5 sm:p-2 rounded-lg ${
+                        isRealtimeMode
+                          ? 'bg-red-500 text-white'
+                          : 'bg-gray-50 text-gray-700 border border-gray-200'
+                      }`}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                      </svg>
+                    </button>
+                    {speechSupported && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (isListening) {
+                            stopListening();
+                          } else {
+                            startListening();
+                          }
+                        }}
+                        disabled={loading}
+                        className={`p-1.5 sm:p-2 rounded-lg ${
+                          isListening
+                            ? 'bg-red-500 text-white'
+                            : loading
+                              ? 'bg-gray-100 text-gray-400'
+                              : 'bg-blue-500 text-white'
+                        }`}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                   <button
-                    type="button"
-                    onClick={() => {
-                      if (isListening) {
-                        stopListening();
-                      } else {
-                        startListening();
-                      }
-                    }}
-                    disabled={loading}
-                    className={`p-3 rounded-xl transition-all duration-200 flex items-center justify-center ${
-                      isListening
-                        ? 'bg-red-500 text-white'
-                        : loading
-                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                          : 'bg-blue-500 text-white hover:bg-blue-600'
+                    type="submit"
+                    disabled={(!input.trim() && !selectedImage) || loading}
+                    className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-sm sm:text-base ${
+                      (!input.trim() && !selectedImage) || loading
+                        ? 'bg-gray-100 text-gray-400'
+                        : 'bg-blue-500 text-white'
                     }`}
-                    title={isListening ? '点击停止录音' : '点击开始语音输入'}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
-                    </svg>
+                    发送
                   </button>
-                )}
-                <button
-                  type="submit"
-                  disabled={(!input.trim() && !selectedImage) || loading}
-                  className={`px-6 py-3 rounded-xl transition-all duration-200 ${
-                    (!input.trim() && !selectedImage) || loading
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-blue-500 text-white hover:bg-blue-600'
-                  }`}
-                >
-                  发送
-                </button>
+                </div>
               </div>
             </form>
           </div>

@@ -94,23 +94,23 @@ export function Horizontal({
   return (
     <div
       className={clsx(
-        "mx-auto flex z-[1] relative min-h-screen w-11/12 flex-wrap items-center justify-between pb-10 md:w-[68vw]",
+        "mx-auto flex z-[1] relative min-h-screen w-11/12 flex-wrap items-center justify-between pb-10 md:w-[65vw]",
         {
-          "gap-[30px]": gapSize == "md",
-          "gap-8": gapSize == "sm",
-          "gap-12": gapSize == "lg",
+          "gap-[16px]": gapSize == "md",
+          "gap-4": gapSize == "sm",
+          "gap-6": gapSize == "lg",
           [`${className}`]: className,
         }
       )}
       {...others}
     >
-      <div className="relative flex min-h-screen w-full flex-col-reverse flex-wrap items-center justify-center gap-10 md:flex-row md:justify-between md:gap-20">
+      <div className="relative flex min-h-[90vh] w-full flex-col-reverse flex-wrap items-center justify-center gap-6 md:flex-row md:justify-between md:gap-12">
         <div
           className={clsx(
-            "flex flex-col items-start gap-8 md:flex-1 [@media(max-width:768px)]:items-center [@media(max-width:768px)]:text-center",
+            "flex flex-col items-start gap-4 md:flex-1 [@media(max-width:768px)]:items-center [@media(max-width:768px)]:text-center",
             {
-              "md:gap-20": !avatarConfig?.hidden && avatarConfig?.aloneRight,
-              "md:gap-6": !avatarConfig?.hidden && !avatarConfig?.aloneRight,
+              "md:gap-12": !avatarConfig?.hidden && avatarConfig?.aloneRight,
+              "md:gap-4": !avatarConfig?.hidden && !avatarConfig?.aloneRight,
             }
           )}
         >
@@ -125,19 +125,19 @@ export function Horizontal({
                 .length * (subTitleConfig?.gapDelay || 0.05)
             }
             warpClass={clsx("", {
-              "pt-12": !avatarConfig?.hidden && !avatarConfig?.aloneRight,
+              "pt-6": !avatarConfig?.hidden && !avatarConfig?.aloneRight,
             })}
             motions={getMotion(0.1, 2, 0.2, istTransition)}
             links={links}
           />
         </div>
         {!avatarConfig?.hidden && avatarConfig?.aloneRight && renderAvatar()}
-        <p className="absolute bottom-6 left-0 right-0 z-10 flex animate-bounce justify-center text-white">
+        <p className="absolute bottom-4 left-0 right-0 z-10 flex animate-bounce justify-center text-white">
           <DoubleArrow className="rotate-90" />
         </p>
       </div>
       {(!sitesConfig?.hidden) && (
-        <div className="flex min-h-[calc(100vh-2.5rem)] w-full flex-col items-center justify-center">
+        <div className="flex min-h-[80vh] w-full flex-col items-center justify-center">
           {!sitesConfig?.hidden && (
             <Links
               sitesConfig={sitesConfig}
@@ -146,7 +146,7 @@ export function Horizontal({
               staticSites={staticSites}
               modalSites={modalSites}
               cardOpacity={cardOpacity}
-              warpClass="flex-row justify-between w-full gap-4"
+              warpClass="flex-row justify-between w-full gap-3 px-4"
             />
           )}
         </div>
