@@ -19,7 +19,44 @@ interface BlogPost {
   category: string;
   readTime: string;
   createdAt?: string;
+  media?: Array<{
+    id: string;
+    type: string;
+    url: string;
+    filename: string;
+    originalName: string;
+  }>;
 }
+
+// 自定义的 remark 插件，用于处理图片
+const customImagePlugin = () => {
+  return (tree) => {
+    const images = [];
+    const visit = (node) => {
+      if (node.type === 'paragraph' && node.children) {
+        node.children.forEach((child, index) => {
+          if (child.type === 'image') {
+            // 提取图片的 URL 和 alt 文本
+            const imageNode = {
+              type: 'element',
+              tagName: 'img',
+              properties: {
+                src: child.url,
+                alt: child.alt || '',
+              },
+            };
+            node.children[index] = imageNode;
+          }
+        });
+      }
+      if (node.children) {
+        node.children.forEach(visit);
+      }
+    };
+    visit(tree);
+    return tree;
+  };
+};
 
 export default function BlogPostPage() {
   const params = useParams();
@@ -39,21 +76,51 @@ export default function BlogPostPage() {
     try {
       console.log('开始获取文章:', params.id);
       const response = await fetch(`/api/blog?id=${params.id}`);
+      
       if (!response.ok) {
+        console.error('获取文章失败:', response.status, response.statusText);
         throw new Error("文章不存在");
       }
+      
       const data = await response.json();
-      const post = data.post || data.posts?.[0];
+      console.log('获取到的原始数据:', {
+        post: {
+          ...data.post,
+          content: data.post?.content?.length + ' 字符'  // 只显示长度
+        },
+        hasPost: !!data.post,
+        mediaCount: data.post?.media?.length
+      });
+      
+      const post = data.post;
       if (!post) {
+        console.error('文章数据为空');
         throw new Error("文章不存在");
       }
 
-      console.log('获取到的文章数据:', post);
+      console.log('处理后的文章数据:', {
+        id: post.id,
+        title: post.title,
+        contentLength: post.content?.length,
+        hasMedia: post.media?.length > 0,
+        mediaItems: post.media?.map(m => ({
+          id: m.id,
+          type: m.type,
+          url: m.url,
+          filename: m.filename
+        }))
+      });
+      
+      // 检查 content 中的 markdown 图片语法
+      const imageMarkdownRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+      const imageMatches = Array.from(post.content.matchAll(imageMarkdownRegex));
+      console.log('找到图片引用数量:', imageMatches.length);
       
       setPost({
         ...post,
         date: post.createdAt,
-        content: post.content
+        content: post.content,
+        media: post.media
       });
     } catch (error) {
       console.error("获取文章失败:", error);
@@ -112,120 +179,46 @@ export default function BlogPostPage() {
   const renderContent = () => {
     if (!post?.content) return null;
 
+    // 检查文章内容中的媒体引用
+    const mediaUrls = post.media?.map(m => m.url) || [];
+    console.log('开始渲染文章内容，长度:', post.content.length);
+
+    // 预处理 Markdown 内容，将图片标记转换为 HTML
+    let processedContent = post.content;
+    const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+    const matches = Array.from(processedContent.matchAll(imageRegex));
+    
+    console.log('找到图片标记数量:', matches.length);
+    
+    matches.forEach((match, index) => {
+      const [fullMatch, alt, src] = match;
+      console.log(`处理第 ${index + 1} 个图片:`, { alt });
+      
+      const imgHtml = src.startsWith('data:') 
+        ? `<img src="${src}" alt="${alt}" class="max-w-full h-auto rounded-lg shadow-lg" style="max-height: 600px; object-fit: contain;" loading="lazy" />`
+        : `<img src="${src}" alt="${alt}" class="max-w-full h-auto rounded-lg shadow-lg" style="max-height: 600px; object-fit: contain;" loading="lazy" />`;
+        
+      processedContent = processedContent.replace(fullMatch, `<div class="flex justify-center my-4">${imgHtml}</div>`);
+    });
+
+    // 将其他 Markdown 语法转换为 HTML
+    const htmlContent = processedContent
+      .replace(/#{3,6}\s+([^\n]+)/g, '<h3 class="text-xl font-bold mb-2">$1</h3>') // h3-h6
+      .replace(/##\s+([^\n]+)/g, '<h2 class="text-2xl font-bold mb-3">$1</h2>') // h2
+      .replace(/#\s+([^\n]+)/g, '<h1 class="text-3xl font-bold mb-4">$1</h1>') // h1
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') // bold
+      .replace(/\*([^*]+)\*/g, '<em>$1</em>') // italic
+      .replace(/`([^`]+)`/g, '<code class="bg-gray-100 dark:bg-gray-800 rounded px-2 py-1 text-sm font-mono">$1</code>') // inline code
+      .replace(/\n\n/g, '</p><p class="mb-4">') // paragraphs
+      .replace(/\n/g, '<br/>'); // line breaks
+
     return (
       <div className="prose prose-lg dark:prose-invert max-w-none">
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          rehypePlugins={[rehypeRaw]}
-          components={{
-            img: ({ node, ...props }) => {
-              const imgProps = props as { src?: string; alt?: string };
-              console.log('渲染图片:', { props: imgProps });
-              
-              if (!imgProps.src) return null;
-              
-              // 处理 base64 图片
-              if (imgProps.src.startsWith('data:image')) {
-                return (
-                  <div className="flex justify-center my-4">
-                    <img 
-                      src={imgProps.src}
-                      alt={imgProps.alt || ''}
-                      className="max-w-full h-auto rounded-lg shadow-lg"
-                      style={{ maxHeight: '600px' }}
-                      loading="lazy"
-                    />
-                  </div>
-                );
-              }
-              
-              // 处理外部图片链接
-              return (
-                <div className="flex justify-center my-4">
-                  <Image 
-                    src={imgProps.src}
-                    alt={imgProps.alt || ''}
-                    width={800}
-                    height={600}
-                    className="max-w-full h-auto rounded-lg shadow-lg"
-                    style={{ maxHeight: '600px', objectFit: 'contain' }}
-                    loading="lazy"
-                  />
-                </div>
-              );
-            },
-            p: ({ node, children, ...props }) => {
-              const hasImg = React.Children.toArray(children).some(
-                child => React.isValidElement(child) && (child.type === 'img' || child.type === Image)
-              );
-              
-              if (hasImg) {
-                return <>{children}</>;
-              }
-              
-              return (
-                <p className="mb-4 text-gray-800 dark:text-gray-200" {...props}>
-                  {children}
-                </p>
-              );
-            },
-            video: ({ node, ...props }) => {
-              const videoProps = props as { src?: string; controls?: boolean; autoPlay?: boolean };
-              if (!videoProps.src) return null;
-
-              return (
-                <div className="flex justify-center my-4">
-                  <video
-                    src={videoProps.src}
-                    className="max-w-full rounded-lg shadow-lg"
-                    style={{ maxHeight: '600px' }}
-                    controls={videoProps.controls !== false}
-                    autoPlay={videoProps.autoPlay === true}
-                    loop
-                    playsInline
-                  />
-                </div>
-              );
-            },
-            h1: ({ children }) => (
-              <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">{children}</h1>
-            ),
-            h2: ({ children }) => (
-              <h2 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white">{children}</h2>
-            ),
-            h3: ({ children }) => (
-              <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">{children}</h3>
-            ),
-            a: ({ children, href }) => (
-              <a href={href} className="text-blue-500 hover:text-blue-600 dark:text-blue-400" target="_blank" rel="noopener noreferrer">
-                {children}
-              </a>
-            ),
-            ul: ({ children }) => (
-              <ul className="list-disc list-inside mb-4 text-gray-800 dark:text-gray-200">{children}</ul>
-            ),
-            ol: ({ children }) => (
-              <ol className="list-decimal list-inside mb-4 text-gray-800 dark:text-gray-200">{children}</ol>
-            ),
-            blockquote: ({ children }) => (
-              <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 my-4 italic text-gray-700 dark:text-gray-300">
-                {children}
-              </blockquote>
-            ),
-            code: ({ children }) => (
-              <code className="bg-gray-100 dark:bg-gray-800 rounded px-2 py-1 text-sm font-mono">
-                {children}
-              </code>
-            ),
-            pre: ({ children }) => (
-              <pre className="bg-gray-100 dark:bg-gray-800 rounded p-4 my-4 overflow-x-auto">
-                {children}
-              </pre>
-            )
+        <div
+          dangerouslySetInnerHTML={{
+            __html: `<div class="markdown-content">${htmlContent}</div>`
           }}
-        >
-          {post.content}
-        </ReactMarkdown>
+        />
       </div>
     );
   };
