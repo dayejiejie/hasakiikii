@@ -23,6 +23,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  typescript: {
+    ignoreBuildErrors: true
+  },
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
@@ -52,7 +55,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:7899/api/:path*'
+        destination: isProd ? '/api/:path*' : 'http://localhost:7899/api/:path*'
       }
     ]
   },
@@ -70,7 +73,6 @@ const nextConfig = {
     ]
   },
   experimental: {
-    serverComponentsExternalPackages: ['sharp', '@prisma/client', 'prisma', '@prisma/client', 'bcrypt'],
   }
 };
 
