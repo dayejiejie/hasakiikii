@@ -199,12 +199,11 @@ const GeminiInterface: React.FC<Props> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // 如果正在录制或捕捉视频，不处理提交
-    if ((!input.trim() && !selectedImage) || loading || isRecording || isCapturing) return;
+    if (!input.trim() || loading || isRecording || isCapturing) return;
 
     const message = input.trim();
     setInput('');
-    await onSendMessage(message, selectedImage || undefined);
-    handleImageRemove();
+    await onSendMessage(message);
   };
 
   // 处理粘贴事件
@@ -356,7 +355,6 @@ const GeminiInterface: React.FC<Props> = ({
 
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: {
-          cursor: 'always',
           width: { ideal: 1280 },
           height: { ideal: 720 }
         },
@@ -964,9 +962,9 @@ const GeminiInterface: React.FC<Props> = ({
             {/* 发送按钮 */}
             <button
               type="submit"
-              disabled={(!input.trim() && !selectedImage) || loading || isRecording || isCapturing}
+              disabled={!input.trim() || loading || isRecording || isCapturing}
               className={`px-4 sm:px-6 py-2 rounded-lg ${
-                loading || (!input.trim() && !selectedImage) || isRecording || isCapturing
+                loading || !input.trim() || isRecording || isCapturing
                   ? 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed'
                   : 'bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700'
               } text-white font-medium text-sm sm:text-base whitespace-nowrap`}
