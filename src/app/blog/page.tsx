@@ -160,14 +160,14 @@ export default function BlogPage() {
         </div>
 
         {/* 分类标签 */}
-        <div className="mb-8 flex flex-wrap justify-center gap-4">
+        <div className="mb-8 flex flex-nowrap justify-center gap-2 overflow-x-auto px-2 md:gap-4 md:px-0">
           {categories.map((category) => (
             <motion.button
               key={category}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setSelectedCategory(category)}
-              className={`rounded-full px-6 py-2 text-sm font-medium transition-colors ${
+              className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors whitespace-nowrap md:px-6 md:py-2 ${
                 selectedCategory === category
                   ? "bg-blue-500 text-white"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300"
