@@ -1,0 +1,82 @@
+{
+  "name": "remio-home",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 7899",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "lint-staged": "lint-staged --allow-empty",
+    "prepare": "husky install",
+    "postinstall": "prisma generate"
+  },
+  "author": "kasuie <i@kasuie.cc>",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.18.0",
+    "@google/generative-ai": "^0.2.1",
+    "@kasuie/http": "^0.0.16",
+    "@kasuie/icon": "^0.0.14",
+    "@kasuie/utils": "^0.0.14",
+    "@mdxeditor/editor": "^1.14.3",
+    "@next/third-parties": "^14.2.3",
+    "@nextui-org/accordion": "^2.0.34",
+    "@nextui-org/checkbox": "^2.1.1",
+    "@nextui-org/input": "^2.2.1",
+    "@nextui-org/radio": "^2.1.1",
+    "@nextui-org/select": "^2.2.1",
+    "@nextui-org/system": "^2.2.1",
+    "@nextui-org/theme": "^2.2.5",
+    "@prisma/client": "5.10.2",
+    "@types/pg": "^8.11.10",
+    "@uiw/react-md-editor": "^4.0.4",
+    "crypto-js": "^4.2.0",
+    "framer-motion": "^11.2.9",
+    "global-agent": "^3.0.0",
+    "https-proxy-agent": "^7.0.6",
+    "katex": "^0.16.15",
+    "next": "14.2.3",
+    "next-pwa": "^5.6.0",
+    "next-themes": "^0.3.0",
+    "node-fetch": "^2.7.0",
+    "openai": "^4.76.3",
+    "pg": "8.11.3",
+    "pg-int8": "1.0.1",
+    "pg-protocol": "1.6.0",
+    "pg-types": "4.0.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-markdown": "^9.0.1",
+    "rehype-katex": "^7.0.1",
+    "rehype-raw": "^7.0.0",
+    "remark-gfm": "^4.0.0",
+    "remark-math": "^6.0.0",
+    "uuid": "^11.0.3"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
+    "@types/crypto-js": "^4.2.2",
+    "@types/node": "^20.12.12",
+    "@types/react": "^18.3.2",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.3",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
+    "postcss": "^8.4.38",
+    "prisma": "5.10.2",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.4.5"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": "eslint --fix"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+}

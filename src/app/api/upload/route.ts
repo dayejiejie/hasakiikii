@@ -1,67 +1,95 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { writeFile } from 'fs/promises';
+import { join } from 'path';
+import { v4 as uuidv4 } from 'uuid';
+import { PrismaClient } from '@prisma/client';
 
-// 新的配置方式
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+const prisma = new PrismaClient();
+
+// 允许的文件类型
+const ALLOWED_TYPES = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/gif': 'gif',
+  'image/webp': 'webp',
+  'video/mp4': 'mp4',
+  'video/webm': 'webm',
+  'video/ogg': 'ogg'
+};
+
+const MAX_FILE_SIZE = {
+  image: 5 * 1024 * 1024, // 5MB for images
+  video: 100 * 1024 * 1024 // 100MB for videos
+};
 
 export async function POST(request: Request) {
   try {
-    console.log('开始处理文件上传...');
     const formData = await request.formData();
     const file = formData.get('file') as File;
+    const postId = formData.get('postId') as string;
     
     if (!file) {
-      console.error('没有找到上传的文件');
-      return NextResponse.json({ error: '没有文件被上传' }, { status: 400 });
+      return NextResponse.json(
+        { error: '没有找到文件' },
+        { status: 400 }
+      );
     }
 
-    if (file.size > 10 * 1024 * 1024) { // 10MB
-      return NextResponse.json({ error: '文件大小超过限制' }, { status: 400 });
+    // 检查文件类型
+    if (!ALLOWED_TYPES[file.type as keyof typeof ALLOWED_TYPES]) {
+      return NextResponse.json(
+        { error: '不支持的文件类型' },
+        { status: 400 }
+      );
     }
 
-    console.log('文件信息:', {
-      name: file.name,
-      type: file.type,
-      size: file.size
-    });
+    // 检查文件大小
+    const maxSize = file.type.startsWith('video/') ? MAX_FILE_SIZE.video : MAX_FILE_SIZE.image;
+    if (file.size > maxSize) {
+      return NextResponse.json(
+        { error: `文件大小不能超过 ${maxSize / 1024 / 1024}MB` },
+        { status: 400 }
+      );
+    }
 
-    // 获取文件扩展名
-    const originalName = file.name;
-    const ext = originalName.split('.').pop() || '';
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
+    // 生成唯一文件名
+    const ext = ALLOWED_TYPES[file.type as keyof typeof ALLOWED_TYPES];
+    const fileName = `${uuidv4()}.${ext}`;
+    
+    // 确定存储目录
+    const mediaType = file.type.startsWith('video/') ? 'videos' : 'images';
+    const directory = join(process.cwd(), 'public', 'uploads', mediaType);
+    const filePath = join(directory, fileName);
 
-    // 将文件转换为 Base64 字符串
+    // 将文件写入服务器
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const base64Data = buffer.toString('base64');
+    await writeFile(filePath, buffer);
 
-    // 创建一个临时的 data URL
-    const dataUrl = `data:${file.type};base64,${base64Data}`;
-
-    // 保存文件信息到数据库，不关联到文章
+    // 生成文件URL
+    const fileUrl = `/uploads/${mediaType}/${fileName}`;
+    
+    // 保存到数据库，如果有 postId 则关联到文章
     const media = await prisma.media.create({
       data: {
         type: file.type,
-        url: dataUrl,
+        url: fileUrl,
         filename: fileName,
-        originalName: file.name
+        originalName: file.name,
+        postId: postId || undefined // 如果有 postId 则关联，否则为 undefined
       }
     });
-
+    
     return NextResponse.json({
       success: true,
-      file: {
-        id: media.id,
-        filename: fileName,
-        url: dataUrl,
-        type: file.type
-      }
+      url: fileUrl,
+      type: file.type,
+      mediaId: media.id
     });
   } catch (error) {
     console.error('文件上传失败:', error);
     return NextResponse.json(
-      { error: '文件上传失败', details: error instanceof Error ? error.message : '未知错误' },
+      { error: '文件上传失败' },
       { status: 500 }
     );
   }

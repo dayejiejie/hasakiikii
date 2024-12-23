@@ -26,42 +26,95 @@ interface BlogPost {
     filename: string;
     originalName: string;
   }>;
+  coverImage?: {
+    url: string;
+  };
+}
+
+interface TreeNode {
+  type: string;
+  children?: TreeNode[];
+  tagName?: string;
+  properties?: {
+    src?: string;
+    alt?: string;
+    [key: string]: any;
+  };
+  url?: string;
+  alt?: string;
+}
+
+interface MediaItem {
+  id: string;
+  type: string;
+  url: string;
+  filename: string;
+  originalName: string;
 }
 
 // 自定义的 remark 插件，用于处理图片
 const customImagePlugin = () => {
-  return (tree) => {
-    const images = [];
-    const visit = (node) => {
-      if (node.type === 'paragraph' && node.children) {
-        node.children.forEach((child, index) => {
+  return (tree: TreeNode) => {
+    const visit = (node: TreeNode) => {
+      const children = node.children || [];
+      if (node.type === 'paragraph' && children.length > 0) {
+        children.forEach((child: TreeNode, index: number) => {
           if (child.type === 'image') {
-            // 提取图片的 URL 和 alt 文本
-            const imageNode = {
+            const imageNode: TreeNode = {
               type: 'element',
               tagName: 'img',
               properties: {
-                src: child.url,
+                src: child.url || '',
                 alt: child.alt || '',
               },
             };
-            node.children[index] = imageNode;
+            children[index] = imageNode;
           }
         });
       }
-      if (node.children) {
-        node.children.forEach(visit);
-      }
+      children.forEach(visit);
     };
     visit(tree);
     return tree;
   };
 };
 
+// 计算阅读时间的函数
+function calculateReadTime(content: string): string {
+  // 移除 Markdown 标记
+  const plainText = content
+    .replace(/!\[.*?\]\(.*?\)/g, '') // 移除图片
+    .replace(/\[.*?\]\(.*?\)/g, '') // 移除链接
+    .replace(/#{1,6}\s+/g, '') // 移除标题
+    .replace(/\*\*|__/g, '') // 移除加粗
+    .replace(/\*|_/g, '') // 移除斜体
+    .replace(/`{1,3}[\s\S]*?`{1,3}/g, ''); // 移除代码块
+
+  // 计算字数
+  const wordCount = plainText.trim().split(/\s+/).length;
+  // 假设平均阅读速度为每分钟 300 字
+  const minutes = Math.ceil(wordCount / 300);
+  return `${minutes} min`;
+}
+
+// 格式化日期的函数
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
 export default function BlogPostPage() {
-  const params = useParams();
-  const router = useRouter();
   const [post, setPost] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { id } = useParams();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -69,83 +122,75 @@ export default function BlogPostPage() {
   const [authAction, setAuthAction] = useState<'edit' | 'delete' | null>(null);
 
   useEffect(() => {
+    const fetchPost = async () => {
+      if (!id) return;
+
+      try {
+        setLoading(true);
+        // 获取文章内容
+        const response = await fetch(`/api/blog?id=${id}`);
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || '获取文章失败');
+        }
+
+        if (data.post) {
+          const mediaUrls = (data.post.media || []).map((m: MediaItem) => m.url);
+          const postData = {
+            ...data.post,
+            date: formatDate(data.post.createdAt),
+            readTime: `${data.post.readCount || 0} 次阅读`,
+            media: data.post.media || []
+          };
+          setPost(postData);
+
+          // 增加阅读次数
+          await fetch(`/api/blog/read?id=${id}`, {
+            method: 'POST'
+          });
+        } else {
+          throw new Error('文章不存在');
+        }
+      } catch (error) {
+        console.error('Error fetching post:', error);
+        setError(error instanceof Error ? error.message : '获取文章失败');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchPost();
-  }, []);
-
-  const fetchPost = async () => {
-    try {
-      console.log('开始获取文章:', params.id);
-      const response = await fetch(`/api/blog?id=${params.id}`);
-      
-      if (!response.ok) {
-        console.error('获取文章失败:', response.status, response.statusText);
-        throw new Error("文章不存在");
-      }
-      
-      const data = await response.json();
-      console.log('获取到的原始数据:', {
-        post: {
-          ...data.post,
-          content: data.post?.content?.length + ' 字符'  // 只显示长度
-        },
-        hasPost: !!data.post,
-        mediaCount: data.post?.media?.length
-      });
-      
-      const post = data.post;
-      if (!post) {
-        console.error('文章数据为空');
-        throw new Error("文章不存在");
-      }
-
-      console.log('处理后的文章数据:', {
-        id: post.id,
-        title: post.title,
-        contentLength: post.content?.length,
-        hasMedia: post.media?.length > 0,
-        mediaItems: post.media?.map(m => ({
-          id: m.id,
-          type: m.type,
-          url: m.url,
-          filename: m.filename
-        }))
-      });
-      
-      // 检查 content 中的 markdown 图片语法
-      const imageMarkdownRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
-      const imageMatches = Array.from(post.content.matchAll(imageMarkdownRegex));
-      console.log('找到图片引用数量:', imageMatches.length);
-      
-      setPost({
-        ...post,
-        date: post.createdAt,
-        content: post.content,
-        media: post.media
-      });
-    } catch (error) {
-      console.error("获取文章失败:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [id]);
 
   const handleDelete = async () => {
     if (!post || isDeleting) return;
     
     setIsDeleting(true);
     try {
+      console.log('开始删除文章:', post.id);
       const response = await fetch(`/api/blog?id=${post.id}`, {
         method: "DELETE",
       });
       
-      if (response.ok) {
-        router.push("/blog");
-      } else {
-        throw new Error("删除失败");
+      const data = await response.json();
+      console.log('删除响应:', data);
+
+      if (!response.ok) {
+        throw new Error(data.error || "删除失败");
       }
+
+      if (!data.success) {
+        throw new Error(data.error || "删除失败");
+      }
+
+      console.log('文章删除成功，准备跳转到博客列表页');
+      router.push("/blog");
     } catch (error) {
       console.error("删除文章失败:", error);
-      alert("删除文章失败");
+      const errorMessage = error instanceof Error ? error.message : "删除失败";
+      console.error('错误详情:', errorMessage);
+      alert(errorMessage);
     } finally {
       setIsDeleting(false);
       setShowDeleteConfirm(false);
@@ -179,51 +224,17 @@ export default function BlogPostPage() {
   const renderContent = () => {
     if (!post?.content) return null;
 
-    // 检查文章内容中的媒体引用
-    const mediaUrls = post.media?.map(m => m.url) || [];
-    console.log('开始渲染文章内容，长度:', post.content.length);
-
-    // 预处理 Markdown 内容，将图片标记转换为 HTML
-    let processedContent = post.content;
-    const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
-    const matches = Array.from(processedContent.matchAll(imageRegex));
-    
-    console.log('找到图片标记数量:', matches.length);
-    
-    matches.forEach((match, index) => {
-      const [fullMatch, alt, src] = match;
-      console.log(`处理第 ${index + 1} 个图片:`, { alt });
-      
-      const imgHtml = src.startsWith('data:') 
-        ? `<img src="${src}" alt="${alt}" class="max-w-full h-auto rounded-lg shadow-lg" style="max-height: 600px; object-fit: contain;" loading="lazy" />`
-        : `<img src="${src}" alt="${alt}" class="max-w-full h-auto rounded-lg shadow-lg" style="max-height: 600px; object-fit: contain;" loading="lazy" />`;
-        
-      processedContent = processedContent.replace(fullMatch, `<div class="flex justify-center my-4">${imgHtml}</div>`);
-    });
-
-    // 将其他 Markdown 语法转换为 HTML
-    const htmlContent = processedContent
-      .replace(/#{3,6}\s+([^\n]+)/g, '<h3 class="text-xl font-bold mb-2">$1</h3>') // h3-h6
-      .replace(/##\s+([^\n]+)/g, '<h2 class="text-2xl font-bold mb-3">$1</h2>') // h2
-      .replace(/#\s+([^\n]+)/g, '<h1 class="text-3xl font-bold mb-4">$1</h1>') // h1
-      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') // bold
-      .replace(/\*([^*]+)\*/g, '<em>$1</em>') // italic
-      .replace(/`([^`]+)`/g, '<code class="bg-gray-100 dark:bg-gray-800 rounded px-2 py-1 text-sm font-mono">$1</code>') // inline code
-      .replace(/\n\n/g, '</p><p class="mb-4">') // paragraphs
-      .replace(/\n/g, '<br/>'); // line breaks
-
     return (
       <div className="prose prose-lg dark:prose-invert max-w-none">
-        <div
-          dangerouslySetInnerHTML={{
-            __html: `<div class="markdown-content">${htmlContent}</div>`
-          }}
+        <div 
+          className="markdown-content"
+          dangerouslySetInnerHTML={{ __html: post.content }}
         />
       </div>
     );
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
         <div className="h-32 w-32 animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700" />
@@ -291,18 +302,38 @@ export default function BlogPostPage() {
               {post.title}
             </h1>
             <div className="flex items-center justify-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
-              <span>{new Date(post.date).toLocaleDateString()}</span>
+              <span>{post.date}</span>
               <span>•</span>
               <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                 {post.category}
               </span>
               <span>•</span>
-              <span>{post.readTime} 阅读</span>
+              <span>{post.readTime}</span>
             </div>
           </div>
 
           {/* 文章内容 */}
           <div className="prose prose-lg mx-auto dark:prose-invert">
+            <style jsx global>{`
+              .markdown-content img {
+                max-width: 100%;
+                height: auto;
+                border-radius: 0.5rem;
+                margin: 2rem auto;
+                display: block;
+              }
+              .markdown-content video {
+                max-width: 100%;
+                height: auto;
+                border-radius: 0.5rem;
+                margin: 2rem auto;
+                display: block;
+              }
+              .markdown-content p {
+                margin-bottom: 1rem;
+                line-height: 1.8;
+              }
+            `}</style>
             {renderContent()}
           </div>
 

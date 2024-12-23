@@ -1,56 +1,80 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { AdminAuth } from "@/components/AdminAuth/AdminAuth";
 
 interface BlogPost {
-  id: number;
+  id: string;
   title: string;
   content: string;
-  excerpt: string;
-  date: string;
   category: string;
-  readTime: string;
+  excerpt?: string;
+  author: string;
+  createdAt: string;
 }
 
 const categories = ["全部", "技术", "随笔", "生活", "项目"];
+
+// 从内容中提取第一个媒体文件
+function extractFirstMedia(content: string) {
+  // 尝试匹配第一个图片
+  const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
+  if (imgMatch) {
+    return {
+      type: 'image',
+      url: imgMatch[1]
+    };
+  }
+
+  // 尝试匹配第一个视频
+  const videoMatch = content.match(/<video[^>]*>.*?<source[^>]+src="([^">]+)".*?>/s);
+  if (videoMatch) {
+    return {
+      type: 'video',
+      url: videoMatch[1]
+    };
+  }
+
+  return null;
+}
+
+// 从内容中提取纯文本
+function extractTextContent(content: string) {
+  return content
+    .replace(/<[^>]+>/g, '') // 移除所有HTML标签
+    .replace(/&[^;]+;/g, '') // 移除HTML实体
+    .trim()
+    .slice(0, 200) + '...'; // 截取前200个字符
+}
 
 export default function BlogPage() {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState("全部");
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [showAdminAuth, setShowAdminAuth] = useState(false);
 
   useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch('/api/blog');
+        const data = await response.json();
+        
+        if (response.ok && data.posts) {
+          setPosts(data.posts);
+        }
+      } catch (error) {
+        console.error('获取文章列表失败:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchPosts();
   }, []);
-
-  const fetchPosts = async () => {
-    try {
-      const response = await fetch("/api/blog");
-      const data = await response.json();
-      if (!data || !data.posts) {
-        console.error("获取文章列表失败: 返回数据格式错误", data);
-        setPosts([]);
-        return;
-      }
-      // 为每篇文章生成摘要
-      const postsWithExcerpt = data.posts.map((post: BlogPost) => ({
-        ...post,
-        excerpt: post.content.slice(0, 100) + "..."
-      }));
-      setPosts(postsWithExcerpt);
-    } catch (error) {
-      console.error("获取文章列表失败:", error);
-      setPosts([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // 根据分类筛选文章
   const filteredPosts = selectedCategory === "全部"
@@ -69,6 +93,23 @@ export default function BlogPage() {
   const handleAuthCancel = () => {
     setShowAdminAuth(false);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-64 rounded-lg bg-gray-200 animate-pulse dark:bg-gray-700"
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
@@ -128,8 +169,8 @@ export default function BlogPage() {
               onClick={() => setSelectedCategory(category)}
               className={`rounded-full px-6 py-2 text-sm font-medium transition-colors ${
                 selectedCategory === category
-                ? "bg-blue-500 text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300"
               }`}
             >
               {category}
@@ -137,54 +178,71 @@ export default function BlogPage() {
           ))}
         </div>
 
-        {/* 博客文章列表 */}
-        <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-          {isLoading ? (
-            // 加载状态
-            Array(6).fill(0).map((_, index) => (
-              <div
-                key={index}
-                className="animate-pulse rounded-xl bg-gray-200 p-6 dark:bg-gray-700"
-                style={{ height: "250px" }}
-              />
-            ))
-          ) : filteredPosts.length === 0 ? (
-            // 无文章状态
-            <div className="col-span-full text-center text-gray-500 dark:text-gray-400">
-              暂无文章
-            </div>
-          ) : (
-            // 文章列表
-            filteredPosts.map((post) => (
-              <Link href={`/blog/${post.id}`} key={post.id}>
-                <motion.article
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  whileHover={{ y: -5 }}
-                  className="group h-full cursor-pointer overflow-hidden rounded-xl bg-white p-6 shadow-lg transition-shadow hover:shadow-xl dark:bg-gray-800"
-                >
-                  <div className="mb-4 flex items-center justify-between">
-                    <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                      {post.category}
-                    </span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(post.date).toLocaleDateString()}
-                    </span>
+        {/* 文章列表 */}
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          {filteredPosts.map((post) => {
+            const media = extractFirstMedia(post.content);
+            const textContent = extractTextContent(post.content);
+            
+            return (
+              <motion.article
+                key={post.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileHover={{ y: -5 }}
+                className="overflow-hidden rounded-lg bg-white shadow-lg transition-shadow hover:shadow-xl dark:bg-gray-800"
+              >
+                <Link href={`/blog/${post.id}`}>
+                  {/* 媒体预览区域 */}
+                  <div className="relative h-48 w-full bg-gray-200 dark:bg-gray-700">
+                    {media ? (
+                      media.type === 'image' ? (
+                        <img
+                          src={media.url}
+                          alt={post.title}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <video
+                          src={media.url}
+                          className="h-full w-full object-cover"
+                          preload="metadata"
+                        />
+                      )
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-gray-500 dark:text-gray-400">
+                        暂无预览
+                      </div>
+                    )}
                   </div>
-                  <h2 className="mb-3 text-xl font-bold text-gray-800 group-hover:text-blue-500 dark:text-white">
-                    {post.title}
-                  </h2>
-                  <p className="mb-4 text-gray-600 dark:text-gray-300">{post.excerpt}</p>
-                  <div className="mt-auto flex items-center justify-between">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">{post.readTime} 阅读</span>
-                    <span className="text-blue-500 transition-transform group-hover:translate-x-2 dark:text-blue-400">
-                      阅读更多 →
-                    </span>
+
+                  {/* 文章信息 */}
+                  <div className="p-6">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        {post.category}
+                      </span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        {new Date(post.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <h2 className="mb-2 text-xl font-bold text-gray-800 dark:text-white">
+                      {post.title}
+                    </h2>
+                    <p className="mb-4 text-gray-600 dark:text-gray-300">
+                      {textContent}
+                    </p>
+                    <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+                      <span>作者：{post.author}</span>
+                      <span className="text-blue-500 transition-transform group-hover:translate-x-2 dark:text-blue-400">
+                        阅读更多 →
+                      </span>
+                    </div>
                   </div>
-                </motion.article>
-              </Link>
-            ))
-          )}
+                </Link>
+              </motion.article>
+            );
+          })}
         </div>
       </main>
 

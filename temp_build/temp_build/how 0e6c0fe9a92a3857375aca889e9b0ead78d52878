@@ -1,0 +1,17 @@
+[33m0e6c0fe[m[33m ([m[1;36mHEAD[m[33m, [m[1;32mmaster[m[33m)[m 优化移动端界面：1. 调整弹幕输入栏和特别鸣谢按钮位置 2. 优化ChatGPT页面在移动端的显示效果
+[33m8c5f9be[m 优化博客文章页面的图片显示：1. 改用原生HTML渲染替代ReactMarkdown 2. 添加专门的markdown-content样式 3. 改进日志输出和图片处理逻辑
+[33m2bee9ec[m fix: 优化博客文章图片和视频显示
+[33mc240c5e[m fix: 修复数据库连接和Markdown编辑器问题
+[33m5dca00c[m fix: update api route config
+[33ma27d76b[m fix: update database config and media url type
+[33mde626f2[m fix: update prisma config and dependencies
+[33m561661e[m fix: optimize prisma client and api error handling
+[33m51ea5c2[m fix: optimize prisma client for vercel deployment
+[33m0dcf350[m chore: update database config for vercel deployment
+[33me3815c3[m fix: 修复提示框显示问题和页面布局问题
+[33m99d905e[m feat: add return button to X-AI page
+[33m6dea7ab[m feat: 优化博客文章页面的图片和视频显示
+[33m58ef585[m style: 将提示图标移动到右下角并优化样式
+[33md9572d8[m fix: 移除Layout中的header和footer，优化页面结构
+[33m790b3e9[m feat: 添加鼠标悬停切换背景功能
+[33m00300b5[m feat: 初始化提交

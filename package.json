@@ -29,6 +29,7 @@
     "@nextui-org/system": "^2.2.1",
     "@nextui-org/theme": "^2.2.5",
     "@prisma/client": "5.10.2",
+    "@tinymce/tinymce-react": "^5.1.1",
     "@types/pg": "^8.11.10",
     "@uiw/react-md-editor": "^4.0.4",
     "crypto-js": "^4.2.0",

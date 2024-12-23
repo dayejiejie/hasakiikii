@@ -1,191 +1,207 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import prisma from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 
-// 获取博客文章列表或单篇文章
+export async function POST(request: Request) {
+  try {
+    const data = await request.json();
+    console.log('接收到的文章数据:', {
+      title: data.title ? '✅ 标题已接收' : '❌ 标题缺失',
+      category: data.category ? '✅ 分类已接收' : '❌ 分类缺失',
+      author: data.author ? '✅ 作者已接收' : '❌ 作者缺失',
+      contentLength: data.content ? `✅ 内容长度: ${data.content.length}字符` : '❌ 内容缺失'
+    });
+    
+    // 验证必需字段
+    if (!data.title || !data.content || !data.category || !data.author) {
+      console.log('❌ 数据验证失败: 缺少必要字段');
+      return NextResponse.json(
+        { error: '标题、内容、分类和作者为必填项' },
+        { status: 400 }
+      );
+    }
+
+    // 分析内容中的媒体元素
+    const imageCount = (data.content.match(/<img[^>]+>/g) || []).length;
+    const videoCount = (data.content.match(/<video[^>]+>/g) || []).length;
+    const textContent = data.content.replace(/<[^>]+>/g, '').trim();
+
+    console.log('内容分析:', {
+      images: `✅ 包含 ${imageCount} 个图片元素`,
+      videos: `✅ 包含 ${videoCount} 个视频元素`,
+      text: `✅ 包含 ${textContent.length} 字符的纯文本`
+    });
+
+    // 创建文章
+    const post = await prisma.blogPost.create({
+      data: {
+        title: data.title,
+        content: data.content,
+        category: data.category,
+        author: data.author,
+        excerpt: data.content.slice(0, 200) + '...',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
+
+    console.log('数据库存储结果:', {
+      postId: `✅ 文章ID: ${post.id}`,
+      title: '✅ 标题已存储',
+      category: '✅ 分类已存储',
+      author: '✅ 作者已存储',
+      content: '✅ 内容已存储',
+      timestamp: `✅ 创建时间: ${post.createdAt.toLocaleString()}`
+    });
+
+    return NextResponse.json({ 
+      success: true, 
+      post,
+      storage: {
+        title: true,
+        category: true,
+        author: true,
+        mediaElements: {
+          images: imageCount,
+          videos: videoCount
+        },
+        textContent: textContent.length > 0
+      }
+    });
+  } catch (error) {
+    console.error('❌ 创建文章失败:', error);
+    return NextResponse.json(
+      { error: '创建文章失败' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
     if (id) {
-      console.log('获取单篇文章:', id);
-      
+      // 获取单篇文章
       const post = await prisma.blogPost.findUnique({
         where: { id },
         include: {
-          media: {
-            select: {
-              id: true,
-              type: true,
-              url: true,
-              filename: true,
-              originalName: true
-            }
-          },
-          comments: {
-            orderBy: {
-              createdAt: 'desc'
-            }
-          }
-        }
+          media: true,
+        },
       });
 
       if (!post) {
-        console.log('文章不存在:', id);
         return NextResponse.json(
           { error: '文章不存在' },
           { status: 404 }
         );
       }
 
-      // 检查文章内容中的媒体引用
-      const mediaUrls = post.media.map(m => m.url);
-      console.log('文章媒体数据:', {
-        id: post.id,
-        title: post.title,
-        mediaCount: post.media.length,
-        mediaUrls: mediaUrls,
-        contentLength: post.content.length,
-        hasMediaInContent: mediaUrls.some(url => post.content.includes(url))
+      return NextResponse.json({ post });
+    } else {
+      // 获取所有文章
+      const posts = await prisma.blogPost.findMany({
+        orderBy: { createdAt: 'desc' },
+        include: {
+          media: true,
+        },
       });
 
-      return NextResponse.json({ post });
+      return NextResponse.json({ posts });
     }
-
-    const posts = await prisma.blogPost.findMany({
-      orderBy: {
-        createdAt: 'desc'
-      },
-      include: {
-        media: {
-          select: {
-            id: true,
-            type: true,
-            url: true,
-            filename: true,
-            originalName: true
-          }
-        },
-        _count: {
-          select: {
-            comments: true
-          }
-        }
-      }
-    });
-
-    return NextResponse.json({ posts });
   } catch (error) {
     console.error('获取文章失败:', error);
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      return NextResponse.json(
-        { error: `数据库错误: ${error.message}`, posts: [] },
-        { status: 500 }
-      );
-    }
     return NextResponse.json(
-      { error: '获取文章失败', posts: [] },
+      { error: '获取文章失败' },
       { status: 500 }
     );
   }
 }
 
-// 创建或更新博客文章
+// 更新博客文章
 export async function PUT(request: Request) {
   try {
-    const body = await request.json();
-    const { id, ...data } = body;
-
-    if (!data.title?.trim() || !data.content?.trim()) {
-      return NextResponse.json(
-        { success: false, error: '标题和内容不能为空' },
-        { status: 400 }
-      );
-    }
-
-    const post = await prisma.$transaction(async (tx) => {
-      return tx.blogPost.upsert({
-        where: { id: id || '' },
-        update: {
-          ...data,
-          updatedAt: new Date()
-        },
-        create: {
-          ...data,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }
-      });
+    const data = await request.json();
+    console.log('接收到的更新数据:', {
+      id: data.id ? '✅ ID已接收' : '❌ ID缺失',
+      title: data.title ? '✅ 标题已接收' : '❌ 标题缺失',
+      category: data.category ? '✅ 分类已接收' : '❌ 分类缺失',
+      author: data.author ? '✅ 作者已接收' : '❌ 作者缺失',
+      contentLength: data.content ? `✅ 内容长度: ${data.content.length}字符` : '❌ 内容缺失'
     });
 
-    return NextResponse.json({ success: true, post });
-  } catch (error) {
-    console.error('保存文章失败:', error);
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (!data.id || !data.title || !data.content || !data.category || !data.author) {
+      console.log('❌ 数据验证失败: 缺少必要字段');
       return NextResponse.json(
-        { success: false, error: `数据库错误: ${error.message}` },
-        { status: 500 }
-      );
-    }
-    return NextResponse.json(
-      { success: false, error: '保存文章失败' },
-      { status: 500 }
-    );
-  }
-}
-
-// 创建新博客文章
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    console.log('收到的文章数据:', body);
-    
-    // 验证必需字段
-    const requiredFields = ['title', 'content', 'category', 'author'];
-    const missingFields = requiredFields.filter(field => !body[field]?.trim());
-    
-    if (missingFields.length > 0) {
-      console.log('缺少必需字段:', missingFields);
-      return NextResponse.json(
-        { success: false, error: `缺少必需字段: ${missingFields.join(', ')}` },
+        { error: 'ID、标题、内容、分类和作者为必填项' },
         { status: 400 }
       );
     }
 
-    console.log('开始创建文章...');
-    const newPost = await prisma.blogPost.create({
+    // 分析内容中的媒体元素
+    const imageCount = (data.content.match(/<img[^>]+>/g) || []).length;
+    const videoCount = (data.content.match(/<video[^>]+>/g) || []).length;
+    const textContent = data.content.replace(/<[^>]+>/g, '').trim();
+
+    console.log('内容分析:', {
+      images: `✅ 包含 ${imageCount} 个图片元素`,
+      videos: `✅ 包含 ${videoCount} 个视频元素`,
+      text: `✅ 包含 ${textContent.length} 字符的纯文本`
+    });
+
+    // 更新文章
+    const post = await prisma.blogPost.update({
+      where: { id: data.id },
       data: {
-        title: body.title.trim(),
-        content: body.content.trim(),
-        category: body.category,
-        author: body.author,
-        readTime: body.readTime || '1 分钟',
-        excerpt: body.excerpt || body.content.slice(0, 100) + '...',
-        createdAt: new Date(),
-        updatedAt: new Date()
+        title: data.title,
+        content: data.content,
+        category: data.category,
+        author: data.author,
+        excerpt: data.content.slice(0, 200) + '...',
+        updatedAt: new Date(),
+      },
+    });
+
+    console.log('数据库更新结果:', {
+      postId: `✅ 文章ID: ${post.id}`,
+      title: '✅ 标题已更新',
+      category: '✅ 分类已更新',
+      author: '✅ 作者已更新',
+      content: '✅ 内容已更新',
+      timestamp: `✅ 更新时间: ${post.updatedAt.toLocaleString()}`
+    });
+
+    return NextResponse.json({ 
+      success: true, 
+      post,
+      storage: {
+        title: true,
+        category: true,
+        author: true,
+        mediaElements: {
+          images: imageCount,
+          videos: videoCount
+        },
+        textContent: textContent.length > 0
       }
     });
-    
-    console.log('文章创建成功:', newPost);
-    return NextResponse.json({ success: true, post: newPost });
   } catch (error) {
-    console.error('创建文章失败，详细错误:', error);
+    console.error('❌ 更新文章失败:', error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      console.error('Prisma错误代码:', error.code);
-      console.error('Prisma错误信息:', error.message);
-      console.error('Prisma错误元数据:', error.meta);
+      if (error.code === 'P2025') {
+        return NextResponse.json(
+          { error: '文章不存在' },
+          { status: 404 }
+        );
+      }
       return NextResponse.json(
-        { success: false, error: `数据库错误: ${error.message}`, details: error.meta },
+        { error: `数据库错误: ${error.message}` },
         { status: 500 }
       );
     }
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : '创建文章失败',
-        details: error instanceof Error ? error.stack : undefined
-      },
+      { error: '更新文章失败' },
       { status: 500 }
     );
   }
@@ -196,51 +212,74 @@ export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    console.log('接收到删除请求:', { id });
 
     if (!id) {
+      console.log('❌ 删除失败: 缺少文章ID');
       return NextResponse.json(
         { success: false, error: '缺少文章ID' },
         { status: 400 }
       );
     }
 
-    await prisma.$transaction(async (tx) => {
-      // 首先检查文章是否存在
-      const post = await tx.blogPost.findUnique({
-        where: { id }
-      });
-
-      if (!post) {
-        throw new Error('文章不存在');
+    // 首先检查文章是否存在
+    const existingPost = await prisma.blogPost.findUnique({
+      where: { id },
+      include: {
+        media: true,
+        comments: true
       }
+    });
 
-      // 删除相关的评论和媒体文件
+    if (!existingPost) {
+      console.log('❌ 删除失败: 文章不存在');
+      return NextResponse.json(
+        { success: false, error: '文章不存在' },
+        { status: 404 }
+      );
+    }
+
+    console.log('开始删除文章相关数据:', {
+      id: existingPost.id,
+      title: existingPost.title,
+      mediaCount: existingPost.media.length,
+      commentCount: existingPost.comments.length
+    });
+
+    // 使用事务确保数据一致性
+    await prisma.$transaction(async (tx) => {
+      // 1. 删除相关的评论
       await tx.comment.deleteMany({
         where: { postId: id }
       });
+      console.log('✅ 已删除相关评论');
 
+      // 2. 删除相关的媒体文件
       await tx.media.deleteMany({
         where: { postId: id }
       });
+      console.log('✅ 已删除相关媒体文件');
 
+      // 3. 删除文章本身
       await tx.blogPost.delete({
         where: { id }
       });
+      console.log('✅ 已删除文章');
     });
 
-    return NextResponse.json({ success: true });
+    console.log('✅ 文章删除成功');
+    return NextResponse.json({ 
+      success: true,
+      message: '文章删除成功',
+      deletedId: id
+    });
+
   } catch (error) {
-    console.error('删除文章失败:', error);
+    console.error('❌ 删除文章失败:', error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       return NextResponse.json(
         { success: false, error: `数据库错误: ${error.message}` },
         { status: 500 }
-      );
-    }
-    if (error instanceof Error && error.message === '文章不存在') {
-      return NextResponse.json(
-        { success: false, error: '文章不存在' },
-        { status: 404 }
       );
     }
     return NextResponse.json(
